@@ -1,0 +1,32 @@
+{
+  "name": "@repo-radar/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Repo Radar web app.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^9.4.0",
+    "@reduxjs/toolkit": "^2.12.0",
+    "@repo-radar/charts": "*",
+    "@repo-radar/ui": "*",
+    "@untitledui/icons": "^0.0.22",
+    "axios": "^1.20.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-redux": "^9.3.0",
+    "react-router": "^7.18.4"
+  },
+  "devDependencies": {
+    "@octokit/openapi-types": "^29.0.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0"
+  }
+}
