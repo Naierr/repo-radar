@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+
+# builds and reports
+dist/
+coverage/
+storybook-static/
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+# env — only the committed examples/defaults are shared
+.env.local
+.env.*.local
+
+# platforms and editors
+.vercel/
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# logs
+*.log
