@@ -42,11 +42,8 @@ const SearchField: React.FC<ISearchFieldProps> = ({
       );
     }
     if (shortcutKey) {
-      return (
-        <ShortcutHint aria-label={`Press ${shortcutKey} to search`}>
-          {shortcutKey}
-        </ShortcutHint>
-      );
+      // Decorative — assistive tech reads aria-keyshortcuts on the input instead.
+      return <ShortcutHint aria-hidden>{shortcutKey}</ShortcutHint>;
     }
     return null;
   };
@@ -66,6 +63,7 @@ const SearchField: React.FC<ISearchFieldProps> = ({
         htmlInput: {
           type: 'search',
           'aria-label': label,
+          'aria-keyshortcuts': shortcutKey,
           autoComplete: 'off',
           spellCheck: false,
           enterKeyHint: 'search',

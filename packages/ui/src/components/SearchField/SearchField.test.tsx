@@ -45,7 +45,18 @@ describe('SearchField', () => {
 
     await user.keyboard('/');
 
-    expect(screen.getByRole('searchbox', { name: LABEL })).toHaveFocus();
+    const field = screen.getByRole('searchbox', { name: LABEL });
+    expect(field).toHaveFocus();
+    expect(field).toHaveValue('');
+  });
+
+  it('announces the shortcut on the field itself, not on the visual key', () => {
+    renderWithTheme(<ControlledSearchField shortcutKey="/" />);
+
+    expect(screen.getByRole('searchbox', { name: LABEL })).toHaveAttribute(
+      'aria-keyshortcuts',
+      '/',
+    );
   });
 
   it('leaves the shortcut alone while the user types elsewhere', async () => {
