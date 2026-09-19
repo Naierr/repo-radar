@@ -15,7 +15,7 @@ Two ways to wire such packages:
    the app's bundler compiles it like its own code.
 
 A built design system at work taught the cost of option 1 when nothing is
-published: 49 versions in eight months, bumps made inside feature PRs, and a
+published: 49 versions in eight and a half months, bumps made inside feature PRs, and a
 design-system change landing apart from the app change that needed it.
 
 ## Decision

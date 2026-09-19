@@ -32,7 +32,7 @@ npm install
 npm run dev          # http://localhost:5173
 ```
 
-Node 22.12+ (see `.nvmrc`). Anonymous GitHub access allows 60 requests an hour
+Node 22.13+ (see `.nvmrc`). Anonymous GitHub access allows 60 requests an hour
 and 10 searches a minute. To lift that while developing, put a token in
 `apps/web/.env.local` — the Vite proxy attaches it server-side, so it never
 reaches the browser bundle:

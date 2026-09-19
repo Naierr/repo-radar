@@ -41,14 +41,17 @@ a cache doesn't model:
 **Good**
 
 - Every async rule is explicit in code and tested at the reducer or store level.
-- The state shape is exactly what the UI reads; rows select their own entity
-  and request, so a refresh re-renders one row.
+- The state shape is exactly what the UI reads; each row selects its own entity
+  and request, so loading and errors never leak between rows.
 - Last-known stats survive reloads and failures.
 
 **Bad, and accepted**
 
 - More code than RTK Query for the same fetch: status fields, `condition`,
   latest-wins guards.
+- While a repo refreshes only its row re-renders, but when the refresh lands
+  the page's "updated …" line re-renders the list. Rows aren't memoised: the
+  list is small and nothing measured says it's needed.
 - No automatic cache for search results beyond the current query.
 - Reconsider RTK Query once there are many read-only endpoints with the same
   loading/error boilerplate.

@@ -38,6 +38,8 @@ const RateLimitIndicator: React.FC = () => {
   if (core) details.push(describe('Repository data', core, now));
   if (search) details.push(describe('Search', search, now));
 
+  // Deliberately not a live region (role="status"): the count changes on every
+  // request, and announcing each change would drown out the rest of the page.
   return (
     <Tooltip
       title={details.map((line) => (

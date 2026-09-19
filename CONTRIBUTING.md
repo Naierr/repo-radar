@@ -45,7 +45,8 @@ the rest. When in doubt, match the file next to the one you are editing.
     ramps outside `packages/ui/src/tokens`.
 18. Style through `styled` in `styles.ts`; state is styled from ARIA or data
     attributes (`&[aria-pressed="true"]`), not extra props.
-19. No `!important`, no `.Mui*` selectors outside the theme overrides.
+19. No `.Mui*` selectors outside `packages/ui`, and no `!important` — the one
+    exception is the reduced-motion reset in the theme baseline, which must win.
 
 ## Tests
 
