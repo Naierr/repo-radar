@@ -52,9 +52,10 @@ export default defineConfig(({ mode }) => {
       environment: 'jsdom',
       setupFiles: ['./src/test/setup.ts'],
       restoreMocks: true,
-      // Integration tests wait on a debounce and on the lazily loaded dashboard,
-      // whose first import (charts included) can take seconds on a busy machine
-      // or a CI runner. 5 s (the default) made them flaky.
+      // The dashboard suite imports the lazy route (charts included) in a
+      // `beforeAll`, so the slow first transform is a hook cost, not a test
+      // cost. Both limits stay generous for cold CI runners.
+      hookTimeout: 30_000,
       testTimeout: 15_000,
     },
   };

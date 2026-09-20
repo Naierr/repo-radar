@@ -1,5 +1,5 @@
 import { screen, waitFor, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import { ROUTES } from '@/constants/routes';
 import { createTrackedReposState } from '@/store/trackedRepos';
@@ -11,7 +11,7 @@ import {
   buildTrackedRepo,
   createFakeGitHubApi,
 } from '../_support/builders';
-import { renderApp } from '../_support/renderApp';
+import { preloadLazyRoutes, renderApp } from '../_support/renderApp';
 
 // Refreshed just now, so opening the dashboard doesn't refresh them by itself.
 const freshRepo = (id: number, name: string): ITrackedRepo =>
@@ -36,6 +36,8 @@ const renderDashboard = (repos: ITrackedRepo[]) => {
 };
 
 describe('tracked dashboard', () => {
+  beforeAll(preloadLazyRoutes);
+
   it('refreshes every repo on its own — a failure stays on its row', async () => {
     const alpha = freshRepo(1, 'alpha');
     const beta = freshRepo(2, 'beta');

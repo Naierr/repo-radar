@@ -17,6 +17,19 @@ interface IRenderAppOptions {
   githubApi?: FakeGitHubApi;
 }
 
+/**
+ * Resolve the lazily loaded dashboard before a suite starts asserting.
+ *
+ * `TrackedReposPage` brings the charting library with it, and Vitest transforms
+ * that module graph on first import — seconds of work. Left inside a test, it
+ * lands in the first query's timeout and reads as a flaky failure when nothing
+ * is actually wrong. Paying it once in `beforeAll` keeps the assertions
+ * measuring the app instead of the module loader.
+ */
+export const preloadLazyRoutes = async (): Promise<void> => {
+  await import('@/pages/TrackedReposPage');
+};
+
 /** The real app — store, theme, routes — talking to a scripted GitHub. */
 export const renderApp = ({
   route = ROUTES.SEARCH,
