@@ -58,6 +58,14 @@ const searchSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(searchRepos.pending, (state, { meta }) => {
+        // A new query invalidates what is on screen, so it goes now rather than
+        // when the response lands — otherwise the header names the new query
+        // while the rows below it still belong to the old one. Paging through
+        // the same query keeps its total, which is still that query's answer.
+        if (meta.arg.query !== state.query) {
+          state.results = [];
+          state.totalCount = 0;
+        }
         state.query = meta.arg.query;
         state.page = meta.arg.page;
         state.status = REQUEST_STATUS.LOADING;

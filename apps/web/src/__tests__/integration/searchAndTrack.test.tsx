@@ -50,6 +50,42 @@ describe('searching and tracking', () => {
     ).toBeInTheDocument();
   });
 
+  it('replaces the previous page with skeletons while the next one loads', async () => {
+    const githubApi = createFakeGitHubApi();
+    const alpha = buildRepoSummary({ id: 1, name: 'alpha' });
+    const beta = buildRepoSummary({ id: 2, name: 'beta' });
+    // Page two stays pending so the loading state can be observed.
+    let releasePageTwo!: () => void;
+    githubApi.searchRepositories.mockImplementation(({ page }) =>
+      page === 1
+        ? Promise.resolve({ totalCount: 40, items: [alpha] })
+        : new Promise((resolve) => {
+            releasePageTwo = () => {
+              resolve({ totalCount: 40, items: [beta] });
+            };
+          }),
+    );
+    const { user } = renderApp({ githubApi });
+
+    await user.type(screen.getByRole('searchbox', SEARCH_FIELD), 'radar');
+    expect(
+      await screen.findByRole('button', { name: 'Track octo/alpha' }),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Go to page 2' }));
+
+    // Page one must not sit there looking like the answer to page two.
+    expect(
+      screen.queryByRole('button', { name: 'Track octo/alpha' }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText('Searching…')).toBeInTheDocument();
+
+    releasePageTwo();
+    expect(
+      await screen.findByRole('button', { name: 'Track octo/beta' }),
+    ).toBeInTheDocument();
+  });
+
   it('cancels the search that a newer query replaces', async () => {
     const githubApi = createFakeGitHubApi();
     const signals: AbortSignal[] = [];

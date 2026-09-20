@@ -42,6 +42,31 @@ describe('search slice', () => {
     });
   });
 
+  it('drops the previous results when a different query starts', () => {
+    const state = reduce(
+      searchRepos.pending('req-1', ARGS),
+      searchRepos.fulfilled(PAGE, 'req-1', ARGS),
+      searchRepos.pending('req-2', { query: 'nebula', page: 1 }),
+    );
+
+    // Keeping them would caption the old rows with the new query.
+    expect(state.results).toEqual([]);
+    expect(state.totalCount).toBe(0);
+    expect(state).toMatchObject({ query: 'nebula', status: 'loading' });
+  });
+
+  it('keeps the total while paging through the same query', () => {
+    const state = reduce(
+      searchRepos.pending('req-1', ARGS),
+      searchRepos.fulfilled(PAGE, 'req-1', ARGS),
+      searchRepos.pending('req-2', { ...ARGS, page: 2 }),
+    );
+
+    // The count still answers this query, so the pager survives the wait.
+    expect(state.totalCount).toBe(1);
+    expect(state).toMatchObject({ page: 2, status: 'loading' });
+  });
+
   it('drops an answer that arrives after a newer request started', () => {
     const newer = { query: 'radar scope', page: 1 };
     const state = reduce(

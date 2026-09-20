@@ -54,25 +54,6 @@ const SearchResults: React.FC<ISearchResultsProps> = ({
     );
   }
 
-  if (isLoading && results.length === 0) {
-    return (
-      <Panel disablePadding>
-        <VisuallyHidden role="status">Searching…</VisuallyHidden>
-        <SkeletonRows aria-hidden>
-          {Array.from({ length: SKELETON_ROW_COUNT }, (_, index) => (
-            <SkeletonRow key={index}>
-              <Skeleton variant="circular" width={32} height={32} />
-              <SkeletonLines>
-                <Skeleton width="40%" />
-                <Skeleton width="80%" />
-              </SkeletonLines>
-            </SkeletonRow>
-          ))}
-        </SkeletonRows>
-      </Panel>
-    );
-  }
-
   if (status === REQUEST_STATUS.FAILED && error) {
     return (
       <ErrorNotice
@@ -97,19 +78,40 @@ const SearchResults: React.FC<ISearchResultsProps> = ({
   return (
     <Panel
       title={
-        <span role="status">
-          {formatNumber(totalCount)}{' '}
-          {totalCount === 1 ? 'repository' : 'repositories'} for “{query}”
-        </span>
+        // While a fresh query loads there is no count yet, and the previous
+        // one belonged to a different search.
+        totalCount > 0 ? (
+          <span role="status">
+            {formatNumber(totalCount)}{' '}
+            {totalCount === 1 ? 'repository' : 'repositories'} for “{query}”
+          </span>
+        ) : undefined
       }
       disablePadding
     >
       {isLoading && <TopProgress aria-label="Loading results" />}
-      <ResultList aria-busy={isLoading}>
-        {results.map((repo) => (
-          <SearchResultItem key={repo.id} repo={repo} />
-        ))}
-      </ResultList>
+      {isLoading ? (
+        <>
+          <VisuallyHidden role="status">Searching…</VisuallyHidden>
+          <SkeletonRows aria-hidden>
+            {Array.from({ length: SKELETON_ROW_COUNT }, (_, index) => (
+              <SkeletonRow key={index}>
+                <Skeleton variant="circular" width={32} height={32} />
+                <SkeletonLines>
+                  <Skeleton width="40%" />
+                  <Skeleton width="80%" />
+                </SkeletonLines>
+              </SkeletonRow>
+            ))}
+          </SkeletonRows>
+        </>
+      ) : (
+        <ResultList>
+          {results.map((repo) => (
+            <SearchResultItem key={repo.id} repo={repo} />
+          ))}
+        </ResultList>
+      )}
       {pageCount > 1 && (
         <PaginationBar>
           <Pagination
