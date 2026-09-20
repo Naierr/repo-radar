@@ -98,7 +98,8 @@ const SearchResults: React.FC<ISearchResultsProps> = ({
     <Panel
       title={
         <span role="status">
-          {formatNumber(totalCount)} repositories for “{query}”
+          {formatNumber(totalCount)}{' '}
+          {totalCount === 1 ? 'repository' : 'repositories'} for “{query}”
         </span>
       }
       disablePadding
