@@ -55,6 +55,12 @@ const READABLE_PAIRS: [string, Pick2][] = [
     (c) => [c.fg.onEmphasis, c.accent.emphasis],
   ],
   ['tooltip.fg on tooltip.bg', (c) => [c.tooltip.fg, c.tooltip.bg]],
+  // The gradient paints headline text, so every stop has to clear the bar on
+  // its own — a bright stop that only suits the dark canvas is a real failure.
+  ...(['from', 'via', 'to'] as const).map((stop): [string, Pick2] => [
+    `gradient.${stop} on canvas.default`,
+    (c) => [c.gradient[stop], c.canvas.default],
+  ]),
 ];
 
 describe('semantic colour tokens', () => {

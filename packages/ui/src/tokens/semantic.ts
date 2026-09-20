@@ -33,6 +33,8 @@ export interface ISemanticColors {
   success: { fg: string; subtle: string };
   attention: { fg: string; subtle: string };
   danger: { fg: string; subtle: string };
+  /** Brand gradient for a headline's key phrase — readable on the canvas. */
+  gradient: { from: string; via: string; to: string };
   tooltip: { bg: string; fg: string };
   starfield: {
     star: string;
@@ -69,6 +71,9 @@ export const lightColors: ISemanticColors = {
   success: { fg: green[600], subtle: '#e4f5ec' },
   attention: { fg: amber[600], subtle: '#fdf3dc' },
   danger: { fg: red[600], subtle: '#fdeceb' },
+  // Deeper stops than the dark scheme's: the bright ones sit at 1.7–2.8:1 on
+  // a light canvas, which fails even the large-text bar.
+  gradient: { from: radar[600], via: nebula[600], to: radar[700] },
   tooltip: { bg: neutral[800], fg: neutral[0] },
   starfield: {
     star: 'rgba(45, 98, 216, 0.28)',
@@ -105,6 +110,7 @@ export const darkColors: ISemanticColors = {
   success: { fg: green[400], subtle: 'rgba(70, 209, 143, 0.14)' },
   attention: { fg: amber[400], subtle: 'rgba(244, 187, 69, 0.14)' },
   danger: { fg: red[400], subtle: 'rgba(255, 122, 120, 0.14)' },
+  gradient: { from: radar[400], via: nebula[400], to: signal[400] },
   tooltip: { bg: '#2a3547', fg: '#f3f6fb' },
   starfield: {
     star: 'rgba(214, 228, 255, 0.9)',

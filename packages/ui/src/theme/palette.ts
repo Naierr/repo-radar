@@ -35,6 +35,7 @@ export const buildPalette = (
     attention: colors.attention,
     danger: colors.danger,
   },
+  gradient: colors.gradient,
   tooltip: colors.tooltip,
   starfield: colors.starfield,
   shadow: { overlay: overlayShadow },

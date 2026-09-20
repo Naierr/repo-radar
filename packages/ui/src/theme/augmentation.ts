@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/no-empty-object-type -- augmenting MUI's own interfaces through declaration merging */
+/* eslint-disable @typescript-eslint/naming-convention -- augmenting MUI's own interfaces through declaration merging */
 import type { ISemanticColors } from '../tokens/semantic';
 
 interface IRadarPalette {
@@ -7,6 +7,7 @@ interface IRadarPalette {
   border: ISemanticColors['border'];
   accent: ISemanticColors['accent'];
   tone: Pick<ISemanticColors, 'success' | 'attention' | 'danger'>;
+  gradient: ISemanticColors['gradient'];
   tooltip: ISemanticColors['tooltip'];
   starfield: ISemanticColors['starfield'];
   shadow: { overlay: string };

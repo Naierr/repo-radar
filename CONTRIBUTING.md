@@ -41,8 +41,9 @@ the rest. When in doubt, match the file next to the one you are editing.
 
 16. The app imports UI only from `@repo-radar/ui` / `@repo-radar/charts` (lint
     enforced). A new MUI primitive is re-exported from `packages/ui` first.
-17. Colours come from theme roles (`theme.vars.palette.*`) — no hex values or raw
-    ramps outside `packages/ui/src/tokens`.
+17. Product code uses theme roles (`theme.vars.palette.*`) only. Hex values and
+    raw ramps stay inside `packages/ui` — the tokens, the theme and the brand
+    mark — and never appear in `apps/web`.
 18. Style through `styled` in `styles.ts`; state is styled from ARIA or data
     attributes (`&[aria-pressed="true"]`), not extra props.
 19. No `.Mui*` selectors outside `packages/ui`, and no `!important` — the one
