@@ -1,12 +1,11 @@
 import { styled } from '@repo-radar/ui';
 
-export type RateLimitTone = 'ok' | 'low' | 'out';
+export type RateLimitTone = 'low' | 'out';
 
 export const Indicator = styled('span', {
   shouldForwardProp: (prop) => prop !== 'tone',
 })<{ tone: RateLimitTone }>(({ theme, tone }) => {
   const color = {
-    ok: theme.vars.palette.fg.muted,
     low: theme.vars.palette.tone.attention.fg,
     out: theme.vars.palette.tone.danger.fg,
   }[tone];
