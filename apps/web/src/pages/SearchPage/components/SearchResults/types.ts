@@ -1,6 +1,7 @@
 import type { IUseRepoSearchResult } from '../../hooks/useRepoSearch';
 
-export type ISearchResultsProps = Pick<
+// Derived from the hook's result so the two can't drift apart.
+export interface ISearchResultsProps extends Pick<
   IUseRepoSearchResult,
   | 'query'
   | 'results'
@@ -11,4 +12,4 @@ export type ISearchResultsProps = Pick<
   | 'pageCount'
   | 'goToPage'
   | 'retry'
->;
+> {}

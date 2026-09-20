@@ -36,6 +36,12 @@ export default defineConfig(
   {
     rules: {
       'no-console': 'error',
+      // `interface X extends Pick<…> {}` keeps the I-prefixed props convention
+      // while deriving the shape, so it can't drift from its source.
+      '@typescript-eslint/no-empty-object-type': [
+        'error',
+        { allowInterfaces: 'with-single-extends' },
+      ],
       'max-lines': [
         'warn',
         { max: 300, skipBlankLines: true, skipComments: true },
