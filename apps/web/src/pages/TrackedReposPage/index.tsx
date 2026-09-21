@@ -11,19 +11,22 @@ import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router';
 
 import { ROUTES } from '@/constants/routes';
+import { TRACKED_ORDER } from '@/constants/trackedRepos';
+import type { TrackedOrder } from '@/constants/trackedRepos';
 import { useAppDispatch, useAppSelector } from '@/hooks/useReduxHooks';
 import {
   refreshStaleRepos,
   repoRestored,
   repoUntracked,
   selectLastRefreshedAt,
-  selectTrackedRepoIds,
+  selectTrackedRepoIdsBy,
 } from '@/store/trackedRepos';
 import type { ITrackedRepo } from '@/types/repo';
 
 import RefreshAllButton from './components/RefreshAllButton';
 import RefreshBudgetNote from './components/RefreshBudgetNote';
 import SharedRadarPrompt from './components/SharedRadarPrompt';
+import TrackedSortControl from './components/TrackedSortControl';
 import ShareRadarButton from './components/ShareRadarButton';
 import StarsChart from './components/StarsChart';
 import TrackedRepoRow from './components/TrackedRepoRow';
@@ -42,7 +45,10 @@ const UNDO_WINDOW_MS = 6000;
 
 const TrackedReposPage: React.FC = () => {
   const dispatch = useAppDispatch();
-  const repoIds = useAppSelector(selectTrackedRepoIds);
+  const [order, setOrder] = useState<TrackedOrder>(TRACKED_ORDER.ADDED);
+  const repoIds = useAppSelector((state) =>
+    selectTrackedRepoIdsBy(state, order),
+  );
   const lastRefreshedAt = useAppSelector(selectLastRefreshedAt);
   const [removedRepo, setRemovedRepo] = useState<ITrackedRepo | null>(null);
   const [isUndoOpen, setIsUndoOpen] = useState(false);
@@ -118,7 +124,15 @@ const TrackedReposPage: React.FC = () => {
       ) : (
         <>
           <StarsChart />
-          <Panel title="Repositories" disablePadding>
+          <Panel
+            title="Repositories"
+            disablePadding
+            actions={
+              repoIds.length > 1 ? (
+                <TrackedSortControl value={order} onChange={setOrder} />
+              ) : undefined
+            }
+          >
             <RowList>
               {repoIds.map((id) => (
                 <TrackedRepoRow

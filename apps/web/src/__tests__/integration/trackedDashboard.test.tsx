@@ -160,6 +160,39 @@ describe('tracked dashboard', () => {
     expect(within(container!).getByText('7')).toBeInTheDocument();
   });
 
+  it('reorders the list without touching the chart ranking', async () => {
+    const small = buildTrackedRepo({
+      id: 1,
+      name: 'small',
+      refreshedAt: new Date().toISOString(),
+      stats: { stars: 10, openIssues: 1, lastCommitAt: null },
+    });
+    const big = buildTrackedRepo({
+      id: 2,
+      name: 'big',
+      refreshedAt: new Date().toISOString(),
+      stats: { stars: 9000, openIssues: 1, lastCommitAt: null },
+    });
+    // Tracked most-recently-first, so `small` leads until sorted by stars.
+    const { user } = renderDashboard([small, big]);
+
+    const namesInOrder = () =>
+      screen
+        .getAllByRole('button', { name: /^Refresh octo\// })
+        .map((button) => button.getAttribute('aria-label'));
+
+    await screen.findByRole('button', { name: `Refresh ${big.fullName}` });
+    expect(namesInOrder()[0]).toBe(`Refresh ${small.fullName}`);
+
+    await user.click(screen.getByRole('button', { name: 'Most stars' }));
+
+    expect(namesInOrder()[0]).toBe(`Refresh ${big.fullName}`);
+    expect(screen.getByRole('button', { name: 'Most stars' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
+
   it('sends an empty dashboard to search', async () => {
     const { user } = renderDashboard([]);
 

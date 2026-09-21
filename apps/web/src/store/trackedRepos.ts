@@ -6,7 +6,8 @@ import {
 import type { EntityState, PayloadAction } from '@reduxjs/toolkit';
 
 import { createAppError, normalizeApiError } from '@/api/apiError';
-import { STALE_AFTER_MS } from '@/constants/trackedRepos';
+import { STALE_AFTER_MS, TRACKED_ORDER } from '@/constants/trackedRepos';
+import type { TrackedOrder } from '@/constants/trackedRepos';
 import type { IRepoSnapshot, IRepoSummary, ITrackedRepo } from '@/types/repo';
 import { APP_ERROR_KIND, REQUEST_STATUS } from '@/types/request';
 import type { IRequestState } from '@/types/request';
@@ -81,6 +82,22 @@ export const selectLastRefreshedAt = createSelector(
         refreshedAt && (!latest || refreshedAt > latest) ? refreshedAt : latest,
       null,
     ),
+);
+
+/**
+ * The list in the order the user asked for. The adapter already keeps the
+ * most recently tracked first, so "added" is its natural order.
+ */
+export const selectTrackedRepoIdsBy = createSelector(
+  [
+    selectAllTrackedRepos,
+    (_state: ITrackedReposRoot, order: TrackedOrder) => order,
+  ],
+  (repos, order) =>
+    (order === TRACKED_ORDER.STARS
+      ? [...repos].sort((a, b) => b.stats.stars - a.stats.stars)
+      : repos
+    ).map((repo) => repo.id),
 );
 
 export const selectStarsChartData = createSelector(

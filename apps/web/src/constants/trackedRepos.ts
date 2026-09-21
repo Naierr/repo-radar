@@ -11,3 +11,11 @@ export const MAX_HISTORY_POINTS = 50;
 export const STALE_AFTER_MS = 10 * 60 * 1000;
 /** Bursts of changes (e.g. refresh all) are written to storage once. */
 export const PERSIST_DEBOUNCE_MS = 300;
+
+/** How the tracked list is ordered. The chart always ranks by stars. */
+export const TRACKED_ORDER = {
+  ADDED: 'added',
+  STARS: 'stars',
+} as const;
+
+export type TrackedOrder = (typeof TRACKED_ORDER)[keyof typeof TRACKED_ORDER];

@@ -15,6 +15,19 @@ describe('describeError', () => {
     expect(describeError(error, NOW)).toContain('in 10 minutes');
   });
 
+  it('says the limit is back rather than reporting a reset in the past', () => {
+    // The window rolled over while the error sat on the row. "It resets 2
+    // minutes ago" is nonsense, and buries the fact that retrying will work.
+    const error = createAppError('rate_limited', {
+      resetAt: '2026-09-18T11:58:00Z',
+    });
+
+    const message = describeError(error, NOW);
+
+    expect(message).toContain('has reset');
+    expect(message).not.toContain('ago');
+  });
+
   it('leaves other errors as they are', () => {
     const error = createAppError('network');
 
