@@ -12,4 +12,7 @@ export interface ISearchResultsProps extends Pick<
   | 'pageCount'
   | 'goToPage'
   | 'retry'
-> {}
+> {
+  /** Puts an example from the tips into the search box. */
+  onPickExample: (query: string) => void;
+}

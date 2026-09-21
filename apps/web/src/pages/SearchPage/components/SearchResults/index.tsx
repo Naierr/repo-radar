@@ -14,6 +14,7 @@ import { REQUEST_STATUS } from '@/types/request';
 import { describeError, isRetryable } from '@/utils/describeError';
 
 import SearchResultItem from '../SearchResultItem';
+import SearchTips from '../SearchTips';
 import {
   PaginationBar,
   ResultList,
@@ -38,6 +39,7 @@ const SearchResults: React.FC<ISearchResultsProps> = ({
   pageCount,
   goToPage,
   retry,
+  onPickExample,
 }) => {
   const now = useNow(CLOCK_TICK_MS);
   const isLoading = status === REQUEST_STATUS.LOADING;
@@ -48,7 +50,7 @@ const SearchResults: React.FC<ISearchResultsProps> = ({
         <EmptyState
           icon={<Telescope size={EMPTY_ICON_SIZE} />}
           title="Scan GitHub for repositories"
-          description="Search by name, topic or language — GitHub qualifiers such as language:rust or stars:>1000 work too."
+          description={<SearchTips onPick={onPickExample} />}
         />
       </Panel>
     );
@@ -69,7 +71,12 @@ const SearchResults: React.FC<ISearchResultsProps> = ({
         <EmptyState
           icon={<SearchLg size={EMPTY_ICON_SIZE} />}
           title={`No repositories match “${query}”`}
-          description="Check the spelling, or try fewer or broader words."
+          description={
+            <>
+              Check the spelling, or try fewer or broader words.
+              <SearchTips onPick={onPickExample} />
+            </>
+          }
         />
       </Panel>
     );

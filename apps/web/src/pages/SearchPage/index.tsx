@@ -4,7 +4,6 @@ import { Stars02 } from '@untitledui/icons';
 import { REQUEST_STATUS } from '@/types/request';
 
 import SearchResults from './components/SearchResults';
-import SearchTips from './components/SearchTips';
 import { useRepoSearch } from './hooks/useRepoSearch';
 import {
   Eyebrow,
@@ -45,7 +44,6 @@ const SearchPage: React.FC = () => {
             loading={search.status === REQUEST_STATUS.LOADING}
             shortcutKey="/"
           />
-          <SearchTips onPick={search.setInput} />
         </SearchBox>
       </Hero>
       <SearchResults
@@ -58,6 +56,7 @@ const SearchPage: React.FC = () => {
         pageCount={search.pageCount}
         goToPage={search.goToPage}
         retry={search.retry}
+        onPickExample={search.setInput}
       />
     </PageStack>
   );
