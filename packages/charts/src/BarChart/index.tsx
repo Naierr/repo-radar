@@ -6,6 +6,7 @@ import {
   seriesColors,
 } from '@repo-radar/ui';
 
+import { withVisibleFloor } from './scale';
 import { ChartRoot, MAX_PLOT_HEIGHT, PlotFrame } from './styles';
 import type { IBarChartProps } from './types';
 
@@ -22,14 +23,6 @@ const MIN_HEIGHT = 180;
 const BAR_RADIUS = 4;
 const MAX_TICK_LABEL_LENGTH = 22;
 const VALUE_TICK_COUNT = 6;
-/**
- * Three stars beside 266,000 rounds to no bar at all, and an empty row reads
- * as "none" rather than "very few". Anything above zero is drawn at least this
- * share of the largest so its presence is visible. The bar is then a presence
- * indicator rather than a measurement at that end of the scale — which is why
- * every label, tooltip and table cell reports the true figure instead.
- */
-const MIN_VISIBLE_SHARE = 0.012;
 
 const barHeightFor = (count: number): number => {
   if (count <= ROOMY_UP_TO) return BAR_HEIGHT.roomy;
@@ -58,11 +51,10 @@ const BarChart: React.FC<IBarChartProps> = ({
       ? `${text} (${delta > 0 ? '+' : '−'}${valueFormatter(Math.abs(delta))} ${deltaLabel})`
       : text;
 
-  const largest = data.reduce((max, { value }) => Math.max(max, value), 0);
-  const floor = largest * MIN_VISIBLE_SHARE;
-  const dataset = data.map(({ label, value }) => ({
+  const plotted = withVisibleFloor(data.map(({ value }) => value));
+  const dataset = data.map(({ label }, index) => ({
     label,
-    value: value > 0 ? Math.max(value, floor) : value,
+    value: plotted[index] ?? 0,
   }));
   const height = Math.max(
     MIN_HEIGHT,
