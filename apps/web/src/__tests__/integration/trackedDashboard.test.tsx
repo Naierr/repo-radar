@@ -193,6 +193,36 @@ describe('tracked dashboard', () => {
     );
   });
 
+  it('untracks a whole selection at once, and undoes it at once', async () => {
+    const alpha = freshRepo(1, 'alpha');
+    const beta = freshRepo(2, 'beta');
+    const { user } = renderDashboard([alpha, beta]);
+
+    await user.click(
+      await screen.findByRole('checkbox', { name: 'Select all repositories' }),
+    );
+    // One confirmation for the batch, not one per repository.
+    await user.click(screen.getByRole('button', { name: 'Stop tracking 2' }));
+
+    const dialog = await screen.findByRole('dialog', {
+      name: /stop tracking 2 repositories/i,
+    });
+    await user.click(
+      within(dialog).getByRole('button', { name: 'Stop tracking' }),
+    );
+
+    expect(await screen.findByText('Your radar is empty')).toBeInTheDocument();
+
+    await user.click(await screen.findByRole('button', { name: /undo/i }));
+
+    expect(
+      await screen.findByRole('button', { name: `Refresh ${alpha.fullName}` }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: `Refresh ${beta.fullName}` }),
+    ).toBeInTheDocument();
+  });
+
   it('sends an empty dashboard to search', async () => {
     const { user } = renderDashboard([]);
 

@@ -1,4 +1,5 @@
 import {
+  Checkbox,
   ConfirmDialog,
   ErrorNotice,
   IconButton,
@@ -53,6 +54,8 @@ const CLOCK_TICK_MS = 30_000;
 const TrackedRepoRow: React.FC<ITrackedRepoRowProps> = ({
   repoId,
   onUntrack,
+  selected,
+  onSelectToggle,
 }) => {
   const dispatch = useAppDispatch();
   const repo = useAppSelector((state) => selectTrackedRepoById(state, repoId));
@@ -137,6 +140,14 @@ const TrackedRepoRow: React.FC<ITrackedRepoRowProps> = ({
         </RowStats>
       </div>
       <RowActions>
+        <Checkbox
+          size="small"
+          checked={selected}
+          onChange={() => {
+            onSelectToggle(repo.id);
+          }}
+          slotProps={{ input: { 'aria-label': `Select ${repo.fullName}` } }}
+        />
         {trend && trend.points.length > 1 && (
           <Tooltip title="Reset trend">
             <IconButton

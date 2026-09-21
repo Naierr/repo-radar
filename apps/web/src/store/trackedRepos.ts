@@ -312,9 +312,14 @@ const trackedReposSlice = createSlice({
         payload: { id, at: new Date().toISOString() },
       }),
     },
-    /** Puts back a repo exactly as it was — the undo for an untrack. */
-    repoRestored: (state, { payload }: PayloadAction<ITrackedRepo>) => {
-      trackedReposAdapter.addOne(state, payload);
+    /** Untracking several at once — one action, so undo is one action too. */
+    reposUntracked: (state, { payload: ids }: PayloadAction<number[]>) => {
+      trackedReposAdapter.removeMany(state, ids);
+      for (const id of ids) state.requests[id] = undefined;
+    },
+    /** Puts back repos exactly as they were — the undo for an untrack. */
+    reposRestored: (state, { payload }: PayloadAction<ITrackedRepo[]>) => {
+      trackedReposAdapter.addMany(state, payload);
     },
   },
   extraReducers: (builder) => {
@@ -369,7 +374,8 @@ export const {
   repoImported,
   repoTracked,
   repoUntracked,
-  repoRestored,
+  reposUntracked,
+  reposRestored,
   trendReset,
 } = trackedReposSlice.actions;
 

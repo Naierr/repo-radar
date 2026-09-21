@@ -45,3 +45,10 @@ export const ActionRow = styled('div')(({ theme }) => ({
   alignItems: 'center',
   gap: theme.spacing(1),
 }));
+
+/** Select-all, and whichever control the current selection calls for. */
+export const PanelTools = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.5),
+}));
