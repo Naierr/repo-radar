@@ -201,8 +201,13 @@ describe('tracked dashboard', () => {
     await user.click(
       await screen.findByRole('checkbox', { name: 'Select all repositories' }),
     );
-    // One confirmation for the batch, not one per repository.
-    await user.click(screen.getByRole('button', { name: 'Stop tracking 2' }));
+    // No separate bulk button: a selected row's own trash speaks for the
+    // whole selection, and asks once rather than once per repository.
+    await user.click(
+      screen.getByRole('button', {
+        name: `Stop tracking ${alpha.fullName} and 1 other selected repository`,
+      }),
+    );
 
     const dialog = await screen.findByRole('dialog', {
       name: /stop tracking 2 repositories/i,
@@ -220,6 +225,35 @@ describe('tracked dashboard', () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: `Refresh ${beta.fullName}` }),
+    ).toBeInTheDocument();
+  });
+
+  it('leaves an unselected row acting only for itself', async () => {
+    const alpha = freshRepo(1, 'alpha');
+    const beta = freshRepo(2, 'beta');
+    const { user } = renderDashboard([alpha, beta]);
+
+    await user.click(
+      await screen.findByRole('checkbox', { name: `Select ${alpha.fullName}` }),
+    );
+
+    // Beta is not in the selection, so its button is still about beta.
+    await user.click(
+      screen.getByRole('button', { name: `Stop tracking ${beta.fullName}` }),
+    );
+    await user.click(
+      within(
+        await screen.findByRole('dialog', {
+          name: `Stop tracking ${beta.fullName}?`,
+        }),
+      ).getByRole('button', { name: 'Stop tracking' }),
+    );
+
+    expect(
+      screen.queryByRole('button', { name: `Refresh ${beta.fullName}` }),
+    ).not.toBeInTheDocument();
+    expect(
+      await screen.findByRole('button', { name: `Refresh ${alpha.fullName}` }),
     ).toBeInTheDocument();
   });
 

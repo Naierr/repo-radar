@@ -39,6 +39,7 @@ import {
   RowFooter,
   RowProgress,
   RowRoot,
+  RowSelect,
   RowStats,
 } from './styles';
 import type { ITrackedRepoRowProps } from './types';
@@ -55,6 +56,7 @@ const TrackedRepoRow: React.FC<ITrackedRepoRowProps> = ({
   repoId,
   onUntrack,
   selected,
+  selectedIds,
   onSelectToggle,
 }) => {
   const dispatch = useAppDispatch();
@@ -71,8 +73,20 @@ const TrackedRepoRow: React.FC<ITrackedRepoRowProps> = ({
     request?.status === REQUEST_STATUS.FAILED ? request.error : null;
   const { stars, openIssues, lastCommitAt } = repo.stats;
 
+  // Acting on a selected row acts on the selection; acting on an unselected
+  // one acts on it alone, the way a file list behaves.
+  const targets = selected && selectedIds.length > 0 ? selectedIds : [repo.id];
+  const isBulk = targets.length > 1;
+  const others = targets.length - 1;
+  // Named from this row outwards, so two selected rows never carry the same
+  // accessible name while both still say what they would do.
+  const describeTarget = isBulk
+    ? `${repo.fullName} and ${String(others)} other selected ${others === 1 ? 'repository' : 'repositories'}`
+    : repo.fullName;
+  const forSelection = `${String(targets.length)} selected`;
+
   const refresh = () => {
-    void dispatch(refreshRepo(repo.id));
+    for (const id of targets) void dispatch(refreshRepo(id));
   };
 
   const renderLastCommit = () => {
@@ -105,6 +119,16 @@ const TrackedRepoRow: React.FC<ITrackedRepoRowProps> = ({
       aria-busy={isRefreshing}
       style={{ viewTransitionName: `repo-${String(repo.id)}` }}
     >
+      <RowSelect>
+        <Checkbox
+          size="small"
+          checked={selected}
+          onChange={() => {
+            onSelectToggle(repo.id);
+          }}
+          slotProps={{ input: { 'aria-label': `Select ${repo.fullName}` } }}
+        />
+      </RowSelect>
       <div>
         <RepoIdentity repo={repo} />
         <RowStats>
@@ -140,14 +164,6 @@ const TrackedRepoRow: React.FC<ITrackedRepoRowProps> = ({
         </RowStats>
       </div>
       <RowActions>
-        <Checkbox
-          size="small"
-          checked={selected}
-          onChange={() => {
-            onSelectToggle(repo.id);
-          }}
-          slotProps={{ input: { 'aria-label': `Select ${repo.fullName}` } }}
-        />
         {trend && trend.points.length > 1 && (
           <Tooltip title="Reset trend">
             <IconButton
@@ -160,20 +176,22 @@ const TrackedRepoRow: React.FC<ITrackedRepoRowProps> = ({
             </IconButton>
           </Tooltip>
         )}
-        <Tooltip title="Refresh">
+        <Tooltip title={isBulk ? `Refresh ${forSelection}` : 'Refresh'}>
           <IconButton
-            aria-label={`Refresh ${repo.fullName}`}
+            aria-label={`Refresh ${describeTarget}`}
             loading={isRefreshing}
             onClick={refresh}
           >
             <RefreshCw01 size={ACTION_ICON_SIZE} aria-hidden />
           </IconButton>
         </Tooltip>
-        <Tooltip title="Stop tracking">
+        <Tooltip
+          title={isBulk ? `Stop tracking ${forSelection}` : 'Stop tracking'}
+        >
           <IconButton
-            aria-label={`Stop tracking ${repo.fullName}`}
+            aria-label={`Stop tracking ${describeTarget}`}
             onClick={() => {
-              onUntrack(repo);
+              onUntrack(targets);
             }}
           >
             <Trash01 size={ACTION_ICON_SIZE} aria-hidden />

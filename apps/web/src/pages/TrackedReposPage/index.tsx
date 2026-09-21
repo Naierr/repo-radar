@@ -150,32 +150,15 @@ const TrackedReposPage: React.FC = () => {
                     }}
                   />
                 )}
-                {selection.selected.length > 0 ? (
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    color="error"
-                    onClick={() => {
-                      setPendingUntrack(
-                        repos.filter((repo) =>
-                          selection.selected.includes(repo.id),
-                        ),
-                      );
+                {repoIds.length > 1 && (
+                  <TrackedSortControl
+                    value={order}
+                    onChange={(next) => {
+                      withTransition(() => {
+                        setOrder(next);
+                      });
                     }}
-                  >
-                    Stop tracking {selection.selected.length}
-                  </Button>
-                ) : (
-                  repoIds.length > 1 && (
-                    <TrackedSortControl
-                      value={order}
-                      onChange={(next) => {
-                        withTransition(() => {
-                          setOrder(next);
-                        });
-                      }}
-                    />
-                  )
+                  />
                 )}
               </PanelTools>
             }
@@ -185,10 +168,13 @@ const TrackedReposPage: React.FC = () => {
                 <TrackedRepoRow
                   key={id}
                   repoId={id}
-                  onUntrack={(repo) => {
-                    setPendingUntrack([repo]);
+                  onUntrack={(ids) => {
+                    setPendingUntrack(
+                      repos.filter((repo) => ids.includes(repo.id)),
+                    );
                   }}
                   selected={selection.isSelected(id)}
+                  selectedIds={selection.selected}
                   onSelectToggle={selection.toggle}
                 />
               ))}
