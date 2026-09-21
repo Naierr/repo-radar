@@ -29,3 +29,18 @@ export const RowList = styled('ul')({
   margin: 0,
   padding: 0,
 });
+
+export const PageActions = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: theme.spacing(1),
+  flexWrap: 'wrap',
+}));
+
+/** The repositories a shared link is offering, listed so they can be read. */
+export const SharedList = styled('ul')(({ theme }) => ({
+  margin: 0,
+  padding: theme.spacing(0, 0, 0, 2.25),
+  display: 'grid',
+  gap: theme.spacing(0.25),
+}));

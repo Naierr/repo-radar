@@ -162,6 +162,38 @@ export const refreshStaleRepos = createAppAsyncThunk(
   },
 );
 
+/**
+ * Takes the repositories named in a shared link. Each is fetched on its own so
+ * one bad name never costs the others, and already-tracked names are dropped
+ * before any request is made.
+ */
+export const importSharedRepos = createAppAsyncThunk<string[], string[]>(
+  'trackedRepos/importSharedRepos',
+  async (fullNames, { dispatch, getState, extra }) => {
+    const state = getState();
+    const tracked = new Set(
+      selectAllTrackedRepos(state).map((repo) => repo.fullName.toLowerCase()),
+    );
+    const wanted = fullNames.filter((name) => !tracked.has(name.toLowerCase()));
+
+    const failed: string[] = [];
+    await Promise.all(
+      wanted.map(async (fullName) => {
+        try {
+          dispatch(
+            repoImported(await extra.githubApi.fetchRepoSnapshot(fullName)),
+          );
+        } catch {
+          // Reported together at the end; one missing repo is not a failure
+          // of the whole link.
+          failed.push(fullName);
+        }
+      }),
+    );
+    return failed;
+  },
+);
+
 // ── Slice ──
 
 const trackedReposSlice = createSlice({
@@ -182,6 +214,27 @@ const trackedReposSlice = createSlice({
           refreshedAt: null,
         },
       }),
+    },
+    /**
+     * A repo taken from a shared link. It arrives with its stats already
+     * fetched, so — unlike `repoTracked` — nothing follows it: re-fetching
+     * what we just asked for would double the cost of accepting a link.
+     */
+    repoImported: {
+      reducer: (state, { payload }: PayloadAction<ITrackedRepo>) => {
+        trackedReposAdapter.addOne(state, payload);
+      },
+      prepare: (snapshot: IRepoSnapshot) => {
+        const at = new Date().toISOString();
+        return {
+          payload: {
+            ...snapshot.identity,
+            trackedAt: at,
+            stats: snapshot.stats,
+            refreshedAt: at,
+          },
+        };
+      },
     },
     repoUntracked: (state, { payload: id }: PayloadAction<number>) => {
       trackedReposAdapter.removeOne(state, id);
@@ -226,7 +279,7 @@ const trackedReposSlice = createSlice({
   },
 });
 
-export const { repoTracked, repoUntracked, repoRestored } =
+export const { repoImported, repoTracked, repoUntracked, repoRestored } =
   trackedReposSlice.actions;
 
 export default trackedReposSlice;
