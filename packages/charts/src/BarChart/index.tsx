@@ -22,6 +22,14 @@ const MIN_HEIGHT = 180;
 const BAR_RADIUS = 4;
 const MAX_TICK_LABEL_LENGTH = 22;
 const VALUE_TICK_COUNT = 6;
+/**
+ * Three stars beside 266,000 rounds to no bar at all, and an empty row reads
+ * as "none" rather than "very few". Anything above zero is drawn at least this
+ * share of the largest so its presence is visible. The bar is then a presence
+ * indicator rather than a measurement at that end of the scale — which is why
+ * every label, tooltip and table cell reports the true figure instead.
+ */
+const MIN_VISIBLE_SHARE = 0.012;
 
 const barHeightFor = (count: number): number => {
   if (count <= ROOMY_UP_TO) return BAR_HEIGHT.roomy;
@@ -50,7 +58,12 @@ const BarChart: React.FC<IBarChartProps> = ({
       ? `${text} (${delta > 0 ? '+' : '−'}${valueFormatter(Math.abs(delta))} ${deltaLabel})`
       : text;
 
-  const dataset = data.map(({ label, value }) => ({ label, value }));
+  const largest = data.reduce((max, { value }) => Math.max(max, value), 0);
+  const floor = largest * MIN_VISIBLE_SHARE;
+  const dataset = data.map(({ label, value }) => ({
+    label,
+    value: value > 0 ? Math.max(value, floor) : value,
+  }));
   const height = Math.max(
     MIN_HEIGHT,
     data.length * barHeightFor(data.length) + AXIS_SPACE,
@@ -95,13 +108,14 @@ const BarChart: React.FC<IBarChartProps> = ({
               dataKey: 'value',
               label: valueLabel,
               color: seriesColors[0],
-              valueFormatter: (value, context) =>
-                value === null
-                  ? ''
-                  : withDelta(
-                      valueFormatter(value),
-                      data[context.dataIndex]?.delta,
-                    ),
+              // Formatted from the datum, never from the plotted height: a
+              // bar lifted to the floor must still say what it is worth.
+              valueFormatter: (_value, context) => {
+                const datum = data[context.dataIndex];
+                return datum
+                  ? withDelta(valueFormatter(datum.value), datum.delta)
+                  : '';
+              },
             },
           ]}
         />

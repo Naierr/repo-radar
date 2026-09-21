@@ -68,6 +68,21 @@ describe('BarChart', () => {
     expect(container.querySelector('[data-scrolls="true"]')).toBeNull();
   });
 
+  it('reports the true value for a bar lifted to the visible minimum', () => {
+    // 3 against 234,567 would round to nothing; the bar is floored so it can
+    // be seen, but the number beside it must not be.
+    renderWithTheme(
+      <BarChart
+        data={[...DATA, { id: '3', label: 'tiny/x', value: 3 }]}
+        title="Stars per repository"
+        valueLabel="Stars"
+      />,
+    );
+
+    const table = screen.getByRole('table', { name: 'Stars per repository' });
+    expect(within(table).getByText('3')).toBeInTheDocument();
+  });
+
   it('renders an empty table without data', () => {
     renderWithTheme(
       <BarChart data={[]} title="Stars per repository" valueLabel="Stars" />,

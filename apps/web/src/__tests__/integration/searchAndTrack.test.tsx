@@ -1,5 +1,5 @@
 import { screen, waitFor, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import {
   buildAxiosError,
@@ -7,11 +7,14 @@ import {
   buildSnapshot,
   createFakeGitHubApi,
 } from '../_support/builders';
-import { renderApp } from '../_support/renderApp';
+import { preloadLazyRoutes, renderApp } from '../_support/renderApp';
 
 const SEARCH_FIELD = { name: 'Search GitHub repositories' };
 
 describe('searching and tracking', () => {
+  // This suite reaches the dashboard too, so it pays the lazy import up front.
+  beforeAll(preloadLazyRoutes);
+
   it('searches once typing pauses, and a tracked hit lands on the dashboard', async () => {
     const githubApi = createFakeGitHubApi();
     const hit = buildRepoSummary({ id: 42, name: 'radar', stars: 4321 });

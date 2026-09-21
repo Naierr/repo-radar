@@ -20,8 +20,6 @@ import {
 } from '@untitledui/icons';
 import { useState } from 'react';
 
-import { Sparkline } from '@repo-radar/charts';
-
 import RepoIdentity from '@/components/RepoIdentity';
 import TrendDelta from '@/components/TrendDelta';
 import { useAppDispatch, useAppSelector } from '@/hooks/useReduxHooks';
@@ -115,12 +113,6 @@ const TrackedRepoRow: React.FC<ITrackedRepoRowProps> = ({
           >
             {formatCompactNumber(stars)}
           </Metric>
-          {trend && trend.points.length > 1 && (
-            <Sparkline
-              values={trend.points.map((point) => point.stars)}
-              label={`Stars for ${repo.fullName} since tracking began`}
-            />
-          )}
           {trend && (
             <TrendDelta
               delta={trend.starsDelta}
