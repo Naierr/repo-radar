@@ -1,8 +1,11 @@
 import { styled } from '@repo-radar/ui';
 
 const TIP_RADIUS = 6;
+const MIN_TARGET = 26;
 
-export const TipsRoot = styled('div')(({ theme }) => ({
+// A span, not a div: the empty state renders its description inside a
+// paragraph, and a div there is invalid HTML that React rejects.
+export const TipsRoot = styled('span')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -15,7 +18,11 @@ export const TipsRoot = styled('div')(({ theme }) => ({
 }));
 
 export const TipButton = styled('button')(({ theme }) => ({
-  padding: theme.spacing(0.25, 0.75),
+  // Big enough to hit with a thumb: WCAG 2.2's 24px minimum target.
+  minHeight: MIN_TARGET,
+  display: 'inline-flex',
+  alignItems: 'center',
+  padding: theme.spacing(0, 1),
   border: `1px solid ${theme.vars.palette.border.default}`,
   borderRadius: TIP_RADIUS,
   backgroundColor: theme.vars.palette.canvas.subtle,

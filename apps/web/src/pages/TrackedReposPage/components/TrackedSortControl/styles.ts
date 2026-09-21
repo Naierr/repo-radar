@@ -1,6 +1,7 @@
 import { styled } from '@repo-radar/ui';
 
 const CONTROL_RADIUS = 7;
+const MIN_TARGET = 26;
 
 export const SortGroup = styled('div')(({ theme }) => ({
   display: 'inline-flex',
@@ -13,7 +14,11 @@ export const SortGroup = styled('div')(({ theme }) => ({
 
 /** Pressed state comes from `aria-pressed`, so the ARIA is the styling hook. */
 export const SortOption = styled('button')(({ theme }) => ({
-  padding: theme.spacing(0.375, 1),
+  // WCAG 2.2 asks for 24px of target; text this small would give about 20.
+  minHeight: MIN_TARGET,
+  display: 'inline-flex',
+  alignItems: 'center',
+  padding: theme.spacing(0, 1.25),
   border: 0,
   borderRadius: CONTROL_RADIUS - 2,
   backgroundColor: 'transparent',
