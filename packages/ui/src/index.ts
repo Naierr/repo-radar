@@ -15,6 +15,8 @@ export { useNow } from './hooks/useNow';
 export { default as BrandMark } from './components/BrandMark';
 export type { IBrandMarkProps } from './components/BrandMark/types';
 export { default as ColorModeMenu } from './components/ColorModeMenu';
+export { default as ConfirmDialog } from './components/ConfirmDialog';
+export type { IConfirmDialogProps } from './components/ConfirmDialog/types';
 export { default as CounterLabel } from './components/CounterLabel';
 export type { ICounterLabelProps } from './components/CounterLabel/types';
 export { default as EmptyState } from './components/EmptyState';

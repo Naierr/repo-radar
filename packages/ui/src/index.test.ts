@@ -15,6 +15,7 @@ describe('@repo-radar/ui public surface', () => {
         'COLOR_MODE_STORAGE_KEY',
         'COLOR_SCHEME_ATTRIBUTE',
         'ColorModeMenu',
+        'ConfirmDialog',
         'CounterLabel',
         'EmptyState',
         'ErrorNotice',
