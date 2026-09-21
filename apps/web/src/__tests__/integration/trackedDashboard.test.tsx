@@ -198,9 +198,13 @@ describe('tracked dashboard', () => {
     const beta = freshRepo(2, 'beta');
     const { user } = renderDashboard([alpha, beta]);
 
+    // Nothing about selecting shows until a row is ticked; "Select all" then
+    // appears in the header rather than sitting there permanently.
     await user.click(
-      await screen.findByRole('checkbox', { name: 'Select all repositories' }),
+      await screen.findByRole('checkbox', { name: `Select ${alpha.fullName}` }),
     );
+    await user.click(screen.getByRole('button', { name: 'Select all' }));
+    expect(screen.getByText('2 selected')).toBeInTheDocument();
     // No separate bulk button: a selected row's own trash speaks for the
     // whole selection, and asks once rather than once per repository.
     await user.click(

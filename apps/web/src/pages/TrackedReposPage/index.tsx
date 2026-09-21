@@ -1,6 +1,5 @@
 import {
   Button,
-  Checkbox,
   ConfirmDialog,
   EmptyState,
   Panel,
@@ -39,6 +38,7 @@ import {
   ActionRow,
   PageActions,
   PanelTools,
+  SelectionCount,
   PageHeader,
   PageLead,
   PageStack,
@@ -139,26 +139,42 @@ const TrackedReposPage: React.FC = () => {
             disablePadding
             actions={
               <PanelTools>
-                {repoIds.length > 1 && (
-                  <Checkbox
-                    size="small"
-                    checked={selection.allSelected}
-                    indeterminate={selection.someSelected}
-                    onChange={selection.toggleAll}
-                    slotProps={{
-                      input: { 'aria-label': 'Select all repositories' },
-                    }}
-                  />
-                )}
-                {repoIds.length > 1 && (
-                  <TrackedSortControl
-                    value={order}
-                    onChange={(next) => {
-                      withTransition(() => {
-                        setOrder(next);
-                      });
-                    }}
-                  />
+                {/* Nothing about selecting is shown until something is
+                    selected: at rest the header is just the ordering. */}
+                {selection.selected.length > 0 ? (
+                  <>
+                    <SelectionCount>
+                      {selection.selected.length} selected
+                    </SelectionCount>
+                    {!selection.allSelected && (
+                      <Button
+                        size="small"
+                        variant="text"
+                        onClick={selection.selectAll}
+                      >
+                        Select all
+                      </Button>
+                    )}
+                    <Button
+                      size="small"
+                      variant="text"
+                      color="inherit"
+                      onClick={selection.clear}
+                    >
+                      Clear
+                    </Button>
+                  </>
+                ) : (
+                  repoIds.length > 1 && (
+                    <TrackedSortControl
+                      value={order}
+                      onChange={(next) => {
+                        withTransition(() => {
+                          setOrder(next);
+                        });
+                      }}
+                    />
+                  )
                 )}
               </PanelTools>
             }

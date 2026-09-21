@@ -52,3 +52,9 @@ export const PanelTools = styled('div')(({ theme }) => ({
   alignItems: 'center',
   gap: theme.spacing(0.5),
 }));
+
+export const SelectionCount = styled('span')(({ theme }) => ({
+  color: theme.vars.palette.fg.muted,
+  fontSize: '0.8125rem',
+  fontVariantNumeric: 'tabular-nums',
+}));

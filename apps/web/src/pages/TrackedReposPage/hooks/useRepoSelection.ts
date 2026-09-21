@@ -4,10 +4,8 @@ export interface IUseRepoSelectionResult {
   selected: number[];
   isSelected: (id: number) => boolean;
   toggle: (id: number) => void;
-  /** Selects every visible repo, or clears the selection if all are chosen. */
-  toggleAll: () => void;
+  selectAll: () => void;
   allSelected: boolean;
-  someSelected: boolean;
   clear: () => void;
 }
 
@@ -37,11 +35,10 @@ export const useRepoSelection = (
         return next;
       });
     },
-    toggleAll: () => {
-      setChosen(allSelected ? new Set() : new Set(visibleIds));
+    selectAll: () => {
+      setChosen(new Set(visibleIds));
     },
     allSelected,
-    someSelected: selected.length > 0 && !allSelected,
     clear: () => {
       setChosen(new Set());
     },
