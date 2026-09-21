@@ -41,14 +41,15 @@ reaches the browser bundle:
 GITHUB_TOKEN=github_pat_...   # a fine-grained token with no permissions is enough
 ```
 
-| Script              | What it runs                                        |
-| ------------------- | --------------------------------------------------- |
-| `npm run dev`       | The app with hot reload                             |
-| `npm run build`     | Type-check, then a production build of `apps/web`   |
-| `npm test`          | Every workspace's tests (Vitest projects)           |
-| `npm run lint`      | ESLint (type-aware, strict) across the repo         |
-| `npm run typecheck` | `tsc` in every workspace                            |
-| `npm run check`     | Format check → lint → typecheck → test → build (CI) |
+| Script              | What it runs                                      |
+| ------------------- | ------------------------------------------------- |
+| `npm run dev`       | The app with hot reload                           |
+| `npm run build`     | Type-check, then a production build of `apps/web` |
+| `npm test`          | Every workspace's tests (Vitest projects)         |
+| `npm run lint`      | ESLint (type-aware, strict) across the repo       |
+| `npm run typecheck` | `tsc` in every workspace                          |
+| `npm run storybook` | The design system at http://localhost:6006        |
+| `npm run check`     | Everything CI runs, in CI's order                 |
 
 ## Repository layout
 
@@ -68,6 +69,7 @@ repo-radar/
 │           └── __tests__/        # integration tests + shared test support
 ├── packages/
 │   ├── ui/                       # design system: tokens → MUI theme, colour modes, components
+│   │   └── .storybook/           # one Storybook for both packages, in the real theme provider
 │   └── charts/                   # plots: themed, accessible charts on MUI X Charts
 ├── docs/adr/                     # architecture decision records
 └── .github/workflows/ci.yml
@@ -149,16 +151,43 @@ Tests cover the three tiers the code has:
 
 Tests query by role and accessible name, never by class names.
 
+## Storybook
+
+`packages/ui` hosts one Storybook for both source-consumed packages, so the
+charts are themed by the same provider the components are:
+
+```bash
+npm run storybook
+```
+
+Every story runs inside the real `ThemeProvider`, and the toolbar's theme
+control drives the same hook the app's own colour-mode menu does — so light,
+dark and system are exercised against the actual tokens rather than a copy.
+`Foundations/Colours` renders the semantic roles straight from
+`theme.vars.palette`, which makes a missing or drifted role visible at a glance.
+The a11y addon runs axe on every story.
+
 ## Deploying (Vercel)
 
-Import the repository, set **Root Directory** to `apps/web` and keep the Vite
-preset — Vercel installs from the workspace root and `apps/web/vercel.json`
-rewrites every path to the SPA.
+Two projects from the same repository:
+
+| Project   | Root Directory | Config                    | Output                         |
+| --------- | -------------- | ------------------------- | ------------------------------ |
+| The app   | repo root      | `vercel.json`             | `apps/web/dist`                |
+| Storybook | `packages/ui`  | `packages/ui/vercel.json` | `packages/ui/storybook-static` |
+
+Both install and build from the **workspace root**: `typescript` and `vite` are
+declared once there, so an install scoped to a single workspace leaves `tsc`
+missing and the build exits 127.
+
+Neither project takes an environment variable. `VITE_GITHUB_API_URL` stays unset
+in production so the app calls `api.github.com` directly, and `GITHUB_TOKEN` is
+deliberately un-prefixed — it only ever decorates the dev server's proxy and
+never reaches a bundle.
 
 ## What I'd do next
 
 - A Vercel function proxy with a server-side token, lifting the shared anonymous
   rate limit for every visitor.
-- Storybook for `ui` and `charts`, with a light/dark toolbar and the a11y addon.
 - Star history: keep previous snapshots to show trends, not just totals.
 - Playwright end-to-end tests against a mocked GitHub.

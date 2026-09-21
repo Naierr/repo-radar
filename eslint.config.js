@@ -85,10 +85,29 @@ export default defineConfig(
     },
   },
 
+  // Stories export story objects beside their component, which is exactly what
+  // Fast Refresh warns about and exactly how CSF is written.
+  {
+    files: ['**/*.stories.tsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+      'max-lines': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
+    },
+  },
+
   {
     files: ['**/*.{js,cjs,mjs}', '**/*.config.ts'],
     extends: [tseslint.configs.disableTypeChecked],
     languageOptions: { globals: globals.node },
+  },
+
+  // Storybook's own configuration: build tooling that happens to render React.
+  {
+    files: ['**/.storybook/*.{ts,tsx}'],
+    extends: [tseslint.configs.disableTypeChecked],
+    languageOptions: { globals: globals.node },
+    rules: { 'react-refresh/only-export-components': 'off' },
   },
 
   prettier,
