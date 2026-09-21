@@ -40,8 +40,16 @@ const BarChart: React.FC<IBarChartProps> = ({
   valueFormatter = formatNumber,
   tickFormatter = formatCompactNumber,
   loading = false,
+  deltaLabel = 'since tracking began',
   emptyMessage = 'Nothing to plot yet',
 }) => {
+  // A compact axis hides small movement — 266,819 and 266,826 both read
+  // "266.8k" — so the exact change travels with the exact value.
+  const withDelta = (text: string, delta: number | undefined): string =>
+    delta
+      ? `${text} (${delta > 0 ? '+' : '−'}${valueFormatter(Math.abs(delta))} ${deltaLabel})`
+      : text;
+
   const dataset = data.map(({ label, value }) => ({ label, value }));
   const height = Math.max(
     MIN_HEIGHT,
@@ -87,8 +95,13 @@ const BarChart: React.FC<IBarChartProps> = ({
               dataKey: 'value',
               label: valueLabel,
               color: seriesColors[0],
-              valueFormatter: (value) =>
-                value === null ? '' : valueFormatter(value),
+              valueFormatter: (value, context) =>
+                value === null
+                  ? ''
+                  : withDelta(
+                      valueFormatter(value),
+                      data[context.dataIndex]?.delta,
+                    ),
             },
           ]}
         />
@@ -102,10 +115,10 @@ const BarChart: React.FC<IBarChartProps> = ({
           </tr>
         </thead>
         <tbody>
-          {data.map(({ id, label, value }) => (
+          {data.map(({ id, label, value, delta }) => (
             <tr key={id}>
               <th scope="row">{label}</th>
-              <td>{valueFormatter(value)}</td>
+              <td>{withDelta(valueFormatter(value), delta)}</td>
             </tr>
           ))}
         </tbody>

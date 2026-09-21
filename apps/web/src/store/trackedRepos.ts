@@ -92,6 +92,7 @@ export const selectStarsChartData = createSelector(
         id: String(repo.id),
         label: repo.fullName,
         value: repo.stats.stars,
+        delta: readTrend(repo)?.starsDelta ?? 0,
       })),
 );
 

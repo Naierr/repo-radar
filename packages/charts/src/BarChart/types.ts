@@ -2,6 +2,8 @@ export interface IBarDatum {
   id: string;
   label: string;
   value: number;
+  /** Movement since the series began. Zero or absent means nothing to report. */
+  delta?: number;
 }
 
 export interface IBarChartProps {
@@ -13,6 +15,8 @@ export interface IBarChartProps {
   valueLabel: string;
   /** Formats values in tooltips and the data table. Defaults to "12,345". */
   valueFormatter?: (value: number) => string;
+  /** Names what a delta is measured against, e.g. "since you started". */
+  deltaLabel?: string;
   /** Formats the value axis ticks. Defaults to "12.3k". */
   tickFormatter?: (value: number) => string;
   loading?: boolean;

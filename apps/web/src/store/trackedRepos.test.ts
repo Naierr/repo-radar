@@ -136,9 +136,27 @@ describe('trackedRepos selectors', () => {
     ]);
 
     expect(selectStarsChartData(state)).toEqual([
-      { id: '2', label: 'octo/big', value: 5000 },
-      { id: '1', label: 'octo/small', value: 10 },
+      { id: '2', label: 'octo/big', value: 5000, delta: 0 },
+      { id: '1', label: 'octo/small', value: 10, delta: 0 },
     ]);
+  });
+
+  it("carries each repo's movement to the chart", () => {
+    const state = reduce([
+      buildTrackedRepo({
+        id: 1,
+        name: 'climber',
+        stats: { ...REPO_A.stats, stars: 120 },
+        history: [
+          { at: 'anchor', stars: 100, openIssues: 5 },
+          { at: 'later', stars: 110, openIssues: 5 },
+        ],
+      }),
+    ]);
+
+    // A compact axis reads "120" and "100" the same at a glance; the delta is
+    // what makes the movement visible.
+    expect(selectStarsChartData(state)[0]?.delta).toBe(20);
   });
 
   it('knows when the watchlist was last refreshed', () => {

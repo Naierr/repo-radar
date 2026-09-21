@@ -16,6 +16,7 @@ const StarsChart: React.FC = () => {
         data={data}
         title="Stars per tracked repository"
         valueLabel="Stars"
+        deltaLabel="since you started watching"
       />
     </Panel>
   );
