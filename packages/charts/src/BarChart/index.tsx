@@ -6,15 +6,28 @@ import {
   seriesColors,
 } from '@repo-radar/ui';
 
-import { ChartRoot } from './styles';
+import { ChartRoot, MAX_PLOT_HEIGHT, PlotFrame } from './styles';
 import type { IBarChartProps } from './types';
 
-const BAR_HEIGHT = 36;
+/**
+ * Bars thin out as the list grows rather than being grouped away: every
+ * repository the user tracks stays its own bar, however many there are.
+ */
+const BAR_HEIGHT = { roomy: 36, tight: 28, dense: 22 } as const;
+const ROOMY_UP_TO = 12;
+const TIGHT_UP_TO = 25;
 const AXIS_SPACE = 48;
 const MIN_HEIGHT = 180;
+
 const BAR_RADIUS = 4;
 const MAX_TICK_LABEL_LENGTH = 22;
 const VALUE_TICK_COUNT = 6;
+
+const barHeightFor = (count: number): number => {
+  if (count <= ROOMY_UP_TO) return BAR_HEIGHT.roomy;
+  if (count <= TIGHT_UP_TO) return BAR_HEIGHT.tight;
+  return BAR_HEIGHT.dense;
+};
 
 const truncate = (text: string, maxLength: number): string =>
   text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text;
@@ -30,47 +43,56 @@ const BarChart: React.FC<IBarChartProps> = ({
   emptyMessage = 'Nothing to plot yet',
 }) => {
   const dataset = data.map(({ label, value }) => ({ label, value }));
-  const height = Math.max(MIN_HEIGHT, data.length * BAR_HEIGHT + AXIS_SPACE);
+  const height = Math.max(
+    MIN_HEIGHT,
+    data.length * barHeightFor(data.length) + AXIS_SPACE,
+  );
+  // Long lists scroll inside a fixed frame, so the chart never runs the page.
+  const scrolls = height > MAX_PLOT_HEIGHT;
 
   return (
     <ChartRoot aria-label={title}>
-      <MuiBarChart
-        title={title}
-        dataset={dataset}
-        layout="horizontal"
-        height={height}
-        borderRadius={BAR_RADIUS}
-        grid={{ vertical: true }}
-        hideLegend
-        loading={loading}
-        localeText={{ noData: emptyMessage }}
-        yAxis={[
-          {
-            scaleType: 'band',
-            dataKey: 'label',
-            width: 'auto',
-            valueFormatter: (label: string, context) =>
-              context.location === 'tick'
-                ? truncate(label, MAX_TICK_LABEL_LENGTH)
-                : label,
-          },
-        ]}
-        xAxis={[
-          {
-            tickNumber: VALUE_TICK_COUNT,
-            valueFormatter: (value: number) => tickFormatter(value),
-          },
-        ]}
-        series={[
-          {
-            dataKey: 'value',
-            label: valueLabel,
-            color: seriesColors[0],
-            valueFormatter: (value) =>
-              value === null ? '' : valueFormatter(value),
-          },
-        ]}
-      />
+      <PlotFrame data-scrolls={scrolls}>
+        <MuiBarChart
+          title={title}
+          dataset={dataset}
+          layout="horizontal"
+          height={height}
+          borderRadius={BAR_RADIUS}
+          grid={{ vertical: true }}
+          hideLegend
+          loading={loading}
+          localeText={{ noData: emptyMessage }}
+          yAxis={[
+            {
+              scaleType: 'band',
+              dataKey: 'label',
+              width: 'auto',
+              valueFormatter: (label: string, context) =>
+                context.location === 'tick'
+                  ? truncate(label, MAX_TICK_LABEL_LENGTH)
+                  : label,
+            },
+          ]}
+          xAxis={[
+            {
+              tickNumber: VALUE_TICK_COUNT,
+              // Scrolled lists keep the scale in view by starting at the top.
+              position: scrolls ? 'top' : 'bottom',
+              valueFormatter: (value: number) => tickFormatter(value),
+            },
+          ]}
+          series={[
+            {
+              dataKey: 'value',
+              label: valueLabel,
+              color: seriesColors[0],
+              valueFormatter: (value) =>
+                value === null ? '' : valueFormatter(value),
+            },
+          ]}
+        />
+      </PlotFrame>
       <VisuallyHidden as="table">
         <caption>{title}</caption>
         <thead>

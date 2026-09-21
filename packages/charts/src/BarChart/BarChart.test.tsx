@@ -39,6 +39,35 @@ describe('BarChart', () => {
     expect(screen.getByText('11020 ★')).toBeInTheDocument();
   });
 
+  it('keeps every repository its own row when the list is long', () => {
+    const many: IBarDatum[] = Array.from({ length: 40 }, (_, index) => ({
+      id: String(index),
+      label: `owner/repo-${String(index)}`,
+      value: 1000 - index,
+    }));
+
+    const { container } = renderWithTheme(
+      <BarChart data={many} title="Stars per repository" valueLabel="Stars" />,
+    );
+
+    // Nothing is grouped away into an "other" bucket.
+    const table = screen.getByRole('table', { name: 'Stars per repository' });
+    expect(within(table).getAllByRole('row')).toHaveLength(many.length + 1);
+    expect(
+      within(table).getByRole('rowheader', { name: 'owner/repo-39' }),
+    ).toBeInTheDocument();
+    // It scrolls inside its frame rather than stretching the page.
+    expect(container.querySelector('[data-scrolls="true"]')).toBeTruthy();
+  });
+
+  it('does not scroll for a list that fits', () => {
+    const { container } = renderWithTheme(
+      <BarChart data={DATA} title="Stars per repository" valueLabel="Stars" />,
+    );
+
+    expect(container.querySelector('[data-scrolls="true"]')).toBeNull();
+  });
+
   it('renders an empty table without data', () => {
     renderWithTheme(
       <BarChart data={[]} title="Stars per repository" valueLabel="Stars" />,
