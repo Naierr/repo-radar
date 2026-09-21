@@ -22,6 +22,10 @@ export const baseOverrides: Components<Theme> = {
           animationIterationCount: '1 !important',
           transitionDuration: '0.01ms !important',
         },
+        // A view transition animates pseudo-elements the rule above cannot
+        // reach, so reordering has to be silenced separately.
+        '::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*)':
+          { animation: 'none !important' },
       },
     }),
   },

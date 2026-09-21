@@ -14,6 +14,7 @@ import { ROUTES } from '@/constants/routes';
 import { TRACKED_ORDER } from '@/constants/trackedRepos';
 import type { TrackedOrder } from '@/constants/trackedRepos';
 import { useAppDispatch, useAppSelector } from '@/hooks/useReduxHooks';
+import { useViewTransition } from '@/hooks/useViewTransition';
 import {
   refreshStaleRepos,
   repoRestored,
@@ -47,6 +48,7 @@ const UNDO_WINDOW_MS = 6000;
 const TrackedReposPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const [order, setOrder] = useState<TrackedOrder>(TRACKED_ORDER.ADDED);
+  const withTransition = useViewTransition();
   const repoIds = useAppSelector((state) =>
     selectTrackedRepoIdsBy(state, order),
   );
@@ -131,7 +133,14 @@ const TrackedReposPage: React.FC = () => {
             disablePadding
             actions={
               repoIds.length > 1 ? (
-                <TrackedSortControl value={order} onChange={setOrder} />
+                <TrackedSortControl
+                  value={order}
+                  onChange={(next) => {
+                    withTransition(() => {
+                      setOrder(next);
+                    });
+                  }}
+                />
               ) : undefined
             }
           >

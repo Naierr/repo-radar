@@ -99,7 +99,11 @@ const TrackedRepoRow: React.FC<ITrackedRepoRowProps> = ({
   };
 
   return (
-    <RowRoot aria-busy={isRefreshing}>
+    // Named so the browser can match this row to itself after a reorder.
+    <RowRoot
+      aria-busy={isRefreshing}
+      style={{ viewTransitionName: `repo-${String(repo.id)}` }}
+    >
       <div>
         <RepoIdentity repo={repo} />
         <RowStats>
