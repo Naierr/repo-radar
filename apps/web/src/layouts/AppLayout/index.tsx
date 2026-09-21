@@ -2,13 +2,15 @@ import {
   BrandMark,
   ColorModeMenu,
   CounterLabel,
+  IconButton,
   LinearProgress,
   Link,
   Starfield,
+  Tooltip,
 } from '@repo-radar/ui';
-import { Eye, SearchLg } from '@untitledui/icons';
+import { Eye, HelpCircle, SearchLg } from '@untitledui/icons';
 import { Suspense } from 'react';
-import { Outlet } from 'react-router';
+import { Link as RouterLink, Outlet } from 'react-router';
 
 import RateLimitIndicator from '@/components/RateLimitIndicator';
 import { ROUTES } from '@/constants/routes';
@@ -28,6 +30,7 @@ import {
 } from './styles';
 
 const NAV_ICON_SIZE = 16;
+const ACTION_ICON_SIZE = 18;
 const MAIN_ID = 'main';
 
 /** The frame every page renders in — it never unmounts between routes. */
@@ -57,6 +60,15 @@ const AppLayout: React.FC = () => {
           </Nav>
           <HeaderActions>
             <RateLimitIndicator />
+            <Tooltip title="How to use Repo Radar">
+              <IconButton
+                aria-label="How to use Repo Radar"
+                component={RouterLink}
+                to={ROUTES.GUIDE}
+              >
+                <HelpCircle size={ACTION_ICON_SIZE} aria-hidden />
+              </IconButton>
+            </Tooltip>
             <ColorModeMenu />
           </HeaderActions>
         </HeaderInner>
