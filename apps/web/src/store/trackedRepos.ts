@@ -13,6 +13,9 @@ import type { IRequestState } from '@/types/request';
 
 import { REQUESTS_PER_REPO_REFRESH } from '@/api/constants';
 
+import { readTrend, recordHistory, toHistoryPoint } from '@/domain/repoHistory';
+import type { IRepoTrend } from '@/domain/repoHistory';
+
 import { createAppAsyncThunk } from './createAppAsyncThunk';
 import { selectCoreRequestsLeft } from './rateLimit';
 
@@ -206,14 +209,19 @@ const trackedReposSlice = createSlice({
       },
       // The search hit already knows stars and issues; the refresh that
       // follows (see the listeners) fills in the last commit.
-      prepare: ({ stars, openIssues, ...identity }: IRepoSummary) => ({
-        payload: {
-          ...identity,
-          trackedAt: new Date().toISOString(),
-          stats: { stars, openIssues, lastCommitAt: null },
-          refreshedAt: null,
-        },
-      }),
+      prepare: ({ stars, openIssues, ...identity }: IRepoSummary) => {
+        const at = new Date().toISOString();
+        return {
+          payload: {
+            ...identity,
+            trackedAt: at,
+            stats: { stars, openIssues, lastCommitAt: null },
+            refreshedAt: null,
+            // Watching starts now, so the trend is anchored now.
+            history: [toHistoryPoint(at, { stars, openIssues })],
+          },
+        };
+      },
     },
     /**
      * A repo taken from a shared link. It arrives with its stats already
@@ -232,6 +240,7 @@ const trackedReposSlice = createSlice({
             trackedAt: at,
             stats: snapshot.stats,
             refreshedAt: at,
+            history: [toHistoryPoint(at, snapshot.stats)],
           },
         };
       },
@@ -239,6 +248,24 @@ const trackedReposSlice = createSlice({
     repoUntracked: (state, { payload: id }: PayloadAction<number>) => {
       trackedReposAdapter.removeOne(state, id);
       state.requests[id] = undefined;
+    },
+    /**
+     * Starts the trend again from today's reading. The old observations are
+     * gone on purpose: a trend the user asked to reset should not quietly keep
+     * measuring from a point they wanted to forget.
+     */
+    trendReset: {
+      reducer: (
+        state,
+        { payload }: PayloadAction<{ id: number; at: string }>,
+      ) => {
+        const repo = state.entities[payload.id];
+        if (!repo) return;
+        repo.history = [toHistoryPoint(payload.at, repo.stats)];
+      },
+      prepare: (id: number) => ({
+        payload: { id, at: new Date().toISOString() },
+      }),
     },
     /** Puts back a repo exactly as it was — the undo for an untrack. */
     repoRestored: (state, { payload }: PayloadAction<ITrackedRepo>) => {
@@ -255,13 +282,18 @@ const trackedReposSlice = createSlice({
       })
       .addCase(refreshRepo.fulfilled, (state, { meta, payload }) => {
         // The repo may have been untracked while its request was in flight.
-        if (!state.entities[meta.arg]) return;
+        const repo = state.entities[meta.arg];
+        if (!repo) return;
         trackedReposAdapter.updateOne(state, {
           id: meta.arg,
           changes: {
             ...payload.identity,
             stats: payload.stats,
             refreshedAt: payload.refreshedAt,
+            history: recordHistory(
+              repo.history,
+              toHistoryPoint(payload.refreshedAt, payload.stats),
+            ),
           },
         });
         state.requests[meta.arg] = {
@@ -279,7 +311,21 @@ const trackedReposSlice = createSlice({
   },
 });
 
-export const { repoImported, repoTracked, repoUntracked, repoRestored } =
-  trackedReposSlice.actions;
+/** What this repository's numbers have done since watching began. */
+export const selectRepoTrend = (
+  state: ITrackedReposRoot,
+  id: number,
+): IRepoTrend | null => {
+  const repo = selectTrackedRepoById(state, id);
+  return repo ? readTrend(repo) : null;
+};
+
+export const {
+  repoImported,
+  repoTracked,
+  repoUntracked,
+  repoRestored,
+  trendReset,
+} = trackedReposSlice.actions;
 
 export default trackedReposSlice;

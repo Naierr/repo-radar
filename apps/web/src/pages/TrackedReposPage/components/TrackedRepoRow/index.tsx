@@ -1,4 +1,5 @@
 import {
+  ConfirmDialog,
   ErrorNotice,
   IconButton,
   LanguageDot,
@@ -11,18 +12,23 @@ import {
 } from '@repo-radar/ui';
 import {
   AlertCircle,
+  FlipBackward,
   GitCommit,
   RefreshCw01,
   Star01,
   Trash01,
 } from '@untitledui/icons';
+import { useState } from 'react';
 
 import RepoIdentity from '@/components/RepoIdentity';
+import TrendDelta from '@/components/TrendDelta';
 import { useAppDispatch, useAppSelector } from '@/hooks/useReduxHooks';
 import {
   refreshRepo,
   selectRepoRequest,
+  selectRepoTrend,
   selectTrackedRepoById,
+  trendReset,
 } from '@/store/trackedRepos';
 import { REQUEST_STATUS } from '@/types/request';
 import { describeError, isRetryable } from '@/utils/describeError';
@@ -51,7 +57,9 @@ const TrackedRepoRow: React.FC<ITrackedRepoRowProps> = ({
   const dispatch = useAppDispatch();
   const repo = useAppSelector((state) => selectTrackedRepoById(state, repoId));
   const request = useAppSelector((state) => selectRepoRequest(state, repoId));
+  const trend = useAppSelector((state) => selectRepoTrend(state, repoId));
   const now = useNow(CLOCK_TICK_MS);
+  const [isResetting, setIsResetting] = useState(false);
 
   if (!repo) return null;
 
@@ -101,6 +109,13 @@ const TrackedRepoRow: React.FC<ITrackedRepoRowProps> = ({
           >
             {formatCompactNumber(stars)}
           </Metric>
+          {trend && (
+            <TrendDelta
+              delta={trend.starsDelta}
+              since={trend.since}
+              unit="stars"
+            />
+          )}
           <Metric
             icon={<AlertCircle size={ICON_SIZE} />}
             label="Open issues"
@@ -118,6 +133,18 @@ const TrackedRepoRow: React.FC<ITrackedRepoRowProps> = ({
         </RowStats>
       </div>
       <RowActions>
+        {trend && (
+          <Tooltip title="Reset trend">
+            <IconButton
+              aria-label={`Reset the trend for ${repo.fullName}`}
+              onClick={() => {
+                setIsResetting(true);
+              }}
+            >
+              <FlipBackward size={ACTION_ICON_SIZE} aria-hidden />
+            </IconButton>
+          </Tooltip>
+        )}
         <Tooltip title="Refresh">
           <IconButton
             aria-label={`Refresh ${repo.fullName}`}
@@ -138,6 +165,21 @@ const TrackedRepoRow: React.FC<ITrackedRepoRowProps> = ({
           </IconButton>
         </Tooltip>
       </RowActions>
+      <ConfirmDialog
+        open={isResetting}
+        tone="danger"
+        title={`Reset the trend for ${repo.fullName}?`}
+        description="Its recorded history is discarded and the trend starts again from today's numbers. GitHub cannot give those readings back."
+        confirmLabel="Reset trend"
+        cancelLabel="Keep the history"
+        onConfirm={() => {
+          dispatch(trendReset(repo.id));
+          setIsResetting(false);
+        }}
+        onCancel={() => {
+          setIsResetting(false);
+        }}
+      />
       <RowFooter>{renderStatus()}</RowFooter>
       {isRefreshing && <RowProgress aria-hidden />}
     </RowRoot>

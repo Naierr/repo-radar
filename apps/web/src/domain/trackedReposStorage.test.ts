@@ -4,7 +4,10 @@ import {
   buildTrackedRepo,
   createMemoryStorage,
 } from '@/__tests__/_support/builders';
-import { TRACKED_REPOS_STORAGE_KEY } from '@/constants/trackedRepos';
+import {
+  TRACKED_REPOS_SCHEMA_VERSION,
+  TRACKED_REPOS_STORAGE_KEY,
+} from '@/constants/trackedRepos';
 
 import { loadTrackedRepos, saveTrackedRepos } from './trackedReposStorage';
 
@@ -38,10 +41,42 @@ describe('tracked repos storage', () => {
     expect(loadTrackedRepos(store(stored))).toEqual([]);
   });
 
+  it('upgrades version 1 rather than throwing the watchlist away', () => {
+    // Version 1 had no history. The repos are the user's own list, so they are
+    // carried forward and anchored to the reading they already held.
+    const { history, ...v1Repo } = buildTrackedRepo({
+      id: 7,
+      refreshedAt: '2026-09-17T00:00:00.000Z',
+    });
+    expect(history).toBeDefined();
+    const stored = JSON.stringify({ version: 1, repos: [v1Repo] });
+
+    const [loaded] = loadTrackedRepos(store(stored));
+
+    expect(loaded?.id).toBe(7);
+    expect(loaded?.history).toEqual([
+      {
+        at: '2026-09-17T00:00:00.000Z',
+        stars: v1Repo.stats.stars,
+        openIssues: v1Repo.stats.openIssues,
+      },
+    ]);
+  });
+
+  it('anchors a never-refreshed version 1 repo to when it was tracked', () => {
+    const { history, ...v1Repo } = buildTrackedRepo({ refreshedAt: null });
+    expect(history).toBeDefined();
+    const stored = JSON.stringify({ version: 1, repos: [v1Repo] });
+
+    expect(loadTrackedRepos(store(stored))[0]?.history[0]?.at).toBe(
+      v1Repo.trackedAt,
+    );
+  });
+
   it('drops a malformed repo but keeps the valid ones', () => {
     const valid = buildTrackedRepo({ id: 1 });
     const stored = JSON.stringify({
-      version: 1,
+      version: TRACKED_REPOS_SCHEMA_VERSION,
       repos: [
         valid,
         { ...buildTrackedRepo({ id: 2 }), stats: { stars: 'lots' } },

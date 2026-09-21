@@ -1,5 +1,11 @@
 export const TRACKED_REPOS_STORAGE_KEY = 'repo-radar:tracked-repos';
-export const TRACKED_REPOS_SCHEMA_VERSION = 1;
+export const TRACKED_REPOS_SCHEMA_VERSION = 2;
+
+/**
+ * Observations kept per repository. Enough to draw a trend, small enough that
+ * fifty repositories stay far inside the storage budget.
+ */
+export const MAX_HISTORY_POINTS = 50;
 
 /** Stats older than this are refreshed when the dashboard opens. */
 export const STALE_AFTER_MS = 10 * 60 * 1000;

@@ -29,12 +29,25 @@ export interface IRepoSummary extends IRepoIdentity {
   openIssues: number;
 }
 
+/** One recorded observation of a repository's numbers. */
+export interface IRepoHistoryPoint {
+  at: string;
+  stars: number;
+  openIssues: number;
+}
+
 /** A repository the user watches, as persisted between visits. */
 export interface ITrackedRepo extends IRepoIdentity {
   trackedAt: string;
   stats: IRepoStats;
   /** When the stats last came fresh from GitHub; null until the first refresh. */
   refreshedAt: string | null;
+  /**
+   * Observations since watching began, oldest first. GitHub does not serve
+   * historical star counts, so this is the only record there is — and its
+   * first entry is the anchor every trend is measured from.
+   */
+  history: IRepoHistoryPoint[];
 }
 
 export interface IRepoSnapshot {

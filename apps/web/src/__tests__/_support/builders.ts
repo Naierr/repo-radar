@@ -40,6 +40,7 @@ export const buildTrackedRepo = (
     lastCommitAt: '2026-09-10T00:00:00.000Z',
   },
   refreshedAt: '2026-09-17T00:00:00.000Z',
+  history: [],
   ...overrides,
 });
 
