@@ -13,6 +13,8 @@ export interface IConfirmDialogProps {
   tone?: 'default' | 'danger';
   /** Keeps the dialog open and the confirm button busy while work runs. */
   busy?: boolean;
+  /** Turns the confirm action off — say why in `details`, not in a tooltip. */
+  confirmDisabled?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }

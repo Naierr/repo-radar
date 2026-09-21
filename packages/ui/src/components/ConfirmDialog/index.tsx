@@ -26,6 +26,7 @@ const ConfirmDialog: React.FC<IConfirmDialogProps> = ({
   cancelLabel = 'Cancel',
   tone = 'default',
   busy = false,
+  confirmDisabled = false,
   onConfirm,
   onCancel,
 }) => {
@@ -67,6 +68,7 @@ const ConfirmDialog: React.FC<IConfirmDialogProps> = ({
           color={isDanger ? 'error' : 'primary'}
           onClick={onConfirm}
           loading={busy}
+          disabled={confirmDisabled}
         >
           {confirmLabel}
         </Button>

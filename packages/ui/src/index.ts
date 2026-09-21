@@ -49,6 +49,8 @@ export {
 // when the app first needs it.
 export { default as Avatar } from '@mui/material/Avatar';
 export { default as Button } from '@mui/material/Button';
+export { default as Checkbox } from '@mui/material/Checkbox';
+export { default as FormControlLabel } from '@mui/material/FormControlLabel';
 export { default as IconButton } from '@mui/material/IconButton';
 export { default as LinearProgress } from '@mui/material/LinearProgress';
 export { default as Link } from '@mui/material/Link';

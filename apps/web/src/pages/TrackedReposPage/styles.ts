@@ -30,17 +30,18 @@ export const RowList = styled('ul')({
   padding: 0,
 });
 
+/** The buttons and whatever has to be said about them, stacked. */
 export const PageActions = styled('div')(({ theme }) => ({
   display: 'flex',
-  alignItems: 'flex-start',
+  flexDirection: 'column',
+  alignItems: 'flex-end',
   gap: theme.spacing(1),
-  flexWrap: 'wrap',
+  [theme.breakpoints.down('sm')]: { alignItems: 'stretch', width: '100%' },
 }));
 
-/** The repositories a shared link is offering, listed so they can be read. */
-export const SharedList = styled('ul')(({ theme }) => ({
-  margin: 0,
-  padding: theme.spacing(0, 0, 0, 2.25),
-  display: 'grid',
-  gap: theme.spacing(0.25),
+/** The buttons themselves, which stay on one line whatever is said below. */
+export const ActionRow = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
 }));

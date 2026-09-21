@@ -6,7 +6,6 @@ import { useAppDispatch, useAppSelector } from '@/hooks/useReduxHooks';
 import { refreshAllRepos, selectRefreshingCount } from '@/store/trackedRepos';
 
 import { useRefreshBudget } from '../../hooks/useRefreshBudget';
-import { BudgetNote, RefreshGroup } from './styles';
 
 const ICON_SIZE = 16;
 
@@ -30,8 +29,9 @@ const RefreshAllButton: React.FC = () => {
   };
 
   return (
-    <RefreshGroup>
-      {/* The price is quoted before it is paid. */}
+    <>
+      {/* The price is quoted before it is paid. A disabled button fires no
+          pointer events, so the tooltip listens above it. */}
       <Tooltip title={`Refreshes ${repos} · ${requests}`}>
         <span>
           <Button
@@ -50,14 +50,6 @@ const RefreshAllButton: React.FC = () => {
         </span>
       </Tooltip>
 
-      {!isAffordable && (
-        <BudgetNote>
-          Needs {requests}; {requestsLeft} left
-          {resetsIn === null ? '' : `, resets ${resetsIn}`}. Refresh rows
-          individually.
-        </BudgetNote>
-      )}
-
       <ConfirmDialog
         open={isConfirming}
         title={`Refresh all ${repos}?`}
@@ -70,7 +62,7 @@ const RefreshAllButton: React.FC = () => {
           setIsConfirming(false);
         }}
       />
-    </RefreshGroup>
+    </>
   );
 };
 

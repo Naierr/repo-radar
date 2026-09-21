@@ -22,18 +22,19 @@ import {
 import type { ITrackedRepo } from '@/types/repo';
 
 import RefreshAllButton from './components/RefreshAllButton';
+import RefreshBudgetNote from './components/RefreshBudgetNote';
+import SharedRadarPrompt from './components/SharedRadarPrompt';
 import ShareRadarButton from './components/ShareRadarButton';
 import StarsChart from './components/StarsChart';
 import TrackedRepoRow from './components/TrackedRepoRow';
-import { useSharedRadar } from './hooks/useSharedRadar';
 import {
+  ActionRow,
   PageActions,
   PageHeader,
   PageLead,
   PageStack,
   PageTitle,
   RowList,
-  SharedList,
 } from './styles';
 
 const EMPTY_ICON_SIZE = 22;
@@ -48,7 +49,6 @@ const TrackedReposPage: React.FC = () => {
   const [pendingUntrack, setPendingUntrack] = useState<ITrackedRepo | null>(
     null,
   );
-  const sharedRadar = useSharedRadar();
 
   // Opening the dashboard refreshes only what is stale, sparing the rate limit.
   useEffect(() => {
@@ -89,8 +89,11 @@ const TrackedReposPage: React.FC = () => {
         </div>
         {repoIds.length > 0 && (
           <PageActions>
-            <ShareRadarButton />
-            <RefreshAllButton />
+            <ActionRow>
+              <ShareRadarButton />
+              <RefreshAllButton />
+            </ActionRow>
+            <RefreshBudgetNote />
           </PageActions>
         )}
       </PageHeader>
@@ -129,22 +132,7 @@ const TrackedReposPage: React.FC = () => {
         </>
       )}
 
-      <ConfirmDialog
-        open={sharedRadar.offered.length > 0}
-        title={`Add ${sharedRadar.offered.length} shared ${sharedRadar.offered.length === 1 ? 'repository' : 'repositories'}?`}
-        description="Someone shared these with you. Nothing joins your radar until you say so."
-        details={
-          <SharedList>
-            {sharedRadar.offered.map((fullName) => (
-              <li key={fullName}>{fullName}</li>
-            ))}
-          </SharedList>
-        }
-        confirmLabel="Add to radar"
-        cancelLabel="No thanks"
-        onConfirm={sharedRadar.accept}
-        onCancel={sharedRadar.dismiss}
-      />
+      <SharedRadarPrompt />
 
       <ConfirmDialog
         open={pendingUntrack !== null}
