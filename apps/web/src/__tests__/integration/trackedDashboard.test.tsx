@@ -73,7 +73,7 @@ describe('tracked dashboard', () => {
     expect(within(rowOf(beta.fullName)).getByText('4.3k')).toBeInTheDocument();
   });
 
-  it('lets the user undo untracking a repo', async () => {
+  it('asks before untracking, and still lets the user undo it', async () => {
     const alpha = freshRepo(1, 'alpha');
     const { user } = renderDashboard([alpha, freshRepo(2, 'beta')]);
 
@@ -83,11 +83,29 @@ describe('tracked dashboard', () => {
       }),
     );
 
+    // Asking is not doing: the row is still there until it is confirmed.
+    // `hidden` because the open dialog takes the page out of the a11y tree.
+    expect(
+      screen.getByRole('button', {
+        name: `Refresh ${alpha.fullName}`,
+        hidden: true,
+      }),
+    ).toBeInTheDocument();
+
+    await user.click(
+      within(
+        screen.getByRole('dialog', {
+          name: `Stop tracking ${alpha.fullName}?`,
+        }),
+      ).getByRole('button', { name: 'Stop tracking' }),
+    );
+
     expect(
       screen.queryByRole('button', { name: `Refresh ${alpha.fullName}` }),
     ).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /undo/i }));
+    // The dialog's closing transition still owns the a11y tree for a tick.
+    await user.click(await screen.findByRole('button', { name: /undo/i }));
 
     expect(
       await screen.findByRole('button', { name: `Refresh ${alpha.fullName}` }),
@@ -114,9 +132,7 @@ describe('tracked dashboard', () => {
     });
 
     expect(refreshAll).toBeDisabled();
-    expect(
-      screen.getByText(/needs 4 requests and 3 are left/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/needs 4 requests; 3 left/i)).toBeInTheDocument();
     // And it never quietly spent what was left on opening the page.
     expect(githubApi.fetchRepoSnapshot).not.toHaveBeenCalled();
   });

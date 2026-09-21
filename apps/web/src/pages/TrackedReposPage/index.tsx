@@ -1,5 +1,6 @@
 import {
   Button,
+  ConfirmDialog,
   EmptyState,
   Panel,
   RelativeTime,
@@ -34,15 +35,22 @@ const TrackedReposPage: React.FC = () => {
   const lastRefreshedAt = useAppSelector(selectLastRefreshedAt);
   const [removedRepo, setRemovedRepo] = useState<ITrackedRepo | null>(null);
   const [isUndoOpen, setIsUndoOpen] = useState(false);
+  const [pendingUntrack, setPendingUntrack] = useState<ITrackedRepo | null>(
+    null,
+  );
 
   // Opening the dashboard refreshes only what is stale, sparing the rate limit.
   useEffect(() => {
     void dispatch(refreshStaleRepos());
   }, [dispatch]);
 
-  const handleUntrack = (repo: ITrackedRepo) => {
-    dispatch(repoUntracked(repo.id));
-    setRemovedRepo(repo);
+  // Asked before, undoable after: the dialog catches the misclick, the
+  // snackbar covers the change of mind.
+  const confirmUntrack = () => {
+    if (!pendingUntrack) return;
+    dispatch(repoUntracked(pendingUntrack.id));
+    setRemovedRepo(pendingUntrack);
+    setPendingUntrack(null);
     setIsUndoOpen(true);
   };
 
@@ -97,13 +105,26 @@ const TrackedReposPage: React.FC = () => {
                 <TrackedRepoRow
                   key={id}
                   repoId={id}
-                  onUntrack={handleUntrack}
+                  onUntrack={setPendingUntrack}
                 />
               ))}
             </RowList>
           </Panel>
         </>
       )}
+
+      <ConfirmDialog
+        open={pendingUntrack !== null}
+        tone="danger"
+        title={`Stop tracking ${pendingUntrack?.fullName ?? ''}?`}
+        description="It leaves your radar and the stars chart straight away."
+        confirmLabel="Stop tracking"
+        cancelLabel="Keep tracking"
+        onConfirm={confirmUntrack}
+        onCancel={() => {
+          setPendingUntrack(null);
+        }}
+      />
 
       <Snackbar
         open={isUndoOpen}

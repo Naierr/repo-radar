@@ -1,5 +1,6 @@
-import { Button, Tooltip } from '@repo-radar/ui';
+import { Button, ConfirmDialog, Tooltip } from '@repo-radar/ui';
 import { RefreshCw01 } from '@untitledui/icons';
+import { useState } from 'react';
 
 import { useAppDispatch, useAppSelector } from '@/hooks/useReduxHooks';
 import { refreshAllRepos, selectRefreshingCount } from '@/store/trackedRepos';
@@ -15,18 +16,23 @@ const plural = (count: number, one: string, many: string): string =>
 const RefreshAllButton: React.FC = () => {
   const dispatch = useAppDispatch();
   const refreshingCount = useAppSelector(selectRefreshingCount);
-  const { repoCount, cost, requestsLeft, isAffordable, resetsIn } =
+  const { repoCount, cost, requestsLeft, isAffordable, isCostly, resetsIn } =
     useRefreshBudget();
+  const [isConfirming, setIsConfirming] = useState(false);
   const isRefreshing = refreshingCount > 0;
 
   const repos = plural(repoCount, 'repository', 'repositories');
+  const requests = plural(cost, 'request', 'requests');
+
+  const start = () => {
+    setIsConfirming(false);
+    void dispatch(refreshAllRepos());
+  };
 
   return (
     <RefreshGroup>
       {/* The price is quoted before it is paid. */}
-      <Tooltip
-        title={`Refreshes ${repos} · ${plural(cost, 'GitHub request', 'GitHub requests')}`}
-      >
+      <Tooltip title={`Refreshes ${repos} · ${requests}`}>
         <span>
           <Button
             variant="contained"
@@ -35,7 +41,8 @@ const RefreshAllButton: React.FC = () => {
             loadingPosition="start"
             disabled={!isAffordable}
             onClick={() => {
-              void dispatch(refreshAllRepos());
+              if (isCostly) setIsConfirming(true);
+              else start();
             }}
           >
             {isRefreshing ? `Refreshing ${refreshingCount}…` : 'Refresh all'}
@@ -45,12 +52,24 @@ const RefreshAllButton: React.FC = () => {
 
       {!isAffordable && (
         <BudgetNote>
-          Refreshing {repos} needs {plural(cost, 'request', 'requests')} and{' '}
-          {requestsLeft} {requestsLeft === 1 ? 'is' : 'are'} left
-          {resetsIn === null ? '' : ` — the limit resets ${resetsIn}`}. Refresh
-          the rows you care about instead.
+          Needs {requests}; {requestsLeft} left
+          {resetsIn === null ? '' : `, resets ${resetsIn}`}. Refresh rows
+          individually.
         </BudgetNote>
       )}
+
+      <ConfirmDialog
+        open={isConfirming}
+        title={`Refresh all ${repos}?`}
+        description="GitHub limits anonymous visitors, and this would use most of what is left this hour."
+        details={`Spends ${requests} of the ${String(requestsLeft)} left${resetsIn === null ? '' : ` · resets ${resetsIn}`}`}
+        confirmLabel="Refresh all"
+        cancelLabel="Not now"
+        onConfirm={start}
+        onCancel={() => {
+          setIsConfirming(false);
+        }}
+      />
     </RefreshGroup>
   );
 };
