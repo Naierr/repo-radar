@@ -3,6 +3,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import { ROUTES } from '@/constants/routes';
 import { createTrackedReposState } from '@/store/trackedRepos';
+import type { IRateLimit } from '@/api/rateLimit';
 import type { ITrackedRepo } from '@/types/repo';
 
 import {
@@ -25,12 +26,18 @@ const rowOf = (fullName: string): HTMLElement => {
   return row;
 };
 
-const renderDashboard = (repos: ITrackedRepo[]) => {
+const renderDashboard = (
+  repos: ITrackedRepo[],
+  rateLimit?: { core: IRateLimit | null; search: IRateLimit | null },
+) => {
   const githubApi = createFakeGitHubApi();
   const rendered = renderApp({
     route: ROUTES.TRACKED,
     githubApi,
-    preloadedState: { trackedRepos: createTrackedReposState(repos) },
+    preloadedState: {
+      trackedRepos: createTrackedReposState(repos),
+      ...(rateLimit ? { rateLimit } : {}),
+    },
   });
   return { ...rendered, githubApi };
 };
@@ -85,6 +92,33 @@ describe('tracked dashboard', () => {
     expect(
       await screen.findByRole('button', { name: `Refresh ${alpha.fullName}` }),
     ).toBeInTheDocument();
+  });
+
+  it('refuses a refresh it cannot afford, and says what it would cost', async () => {
+    // Two repos cost four requests; three are left in an open window.
+    const { githubApi } = renderDashboard(
+      [freshRepo(1, 'alpha'), freshRepo(2, 'beta')],
+      {
+        core: {
+          resource: 'core',
+          limit: 60,
+          remaining: 3,
+          resetAt: new Date(Date.now() + 600_000).toISOString(),
+        },
+        search: null,
+      },
+    );
+
+    const refreshAll = await screen.findByRole('button', {
+      name: /refresh all/i,
+    });
+
+    expect(refreshAll).toBeDisabled();
+    expect(
+      screen.getByText(/needs 4 requests and 3 are left/i),
+    ).toBeInTheDocument();
+    // And it never quietly spent what was left on opening the page.
+    expect(githubApi.fetchRepoSnapshot).not.toHaveBeenCalled();
   });
 
   it('sends an empty dashboard to search', async () => {

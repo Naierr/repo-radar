@@ -152,10 +152,21 @@ describe('trackedRepos selectors', () => {
 });
 
 describe('trackedRepos thunks', () => {
-  const setup = (repos: ITrackedRepo[]) => {
+  const coreBudget = (remaining: number, resetAt: string) => ({
+    core: { resource: 'core', limit: 60, remaining, resetAt },
+    search: null,
+  });
+
+  const setup = (
+    repos: ITrackedRepo[],
+    rateLimit?: ReturnType<typeof coreBudget>,
+  ) => {
     const githubApi = createFakeGitHubApi();
     const store = setupStore({
-      preloadedState: { trackedRepos: createTrackedReposState(repos) },
+      preloadedState: {
+        trackedRepos: createTrackedReposState(repos),
+        ...(rateLimit ? { rateLimit } : {}),
+      },
       extra: { githubApi },
       storage: createMemoryStorage().storage,
     });
@@ -216,5 +227,33 @@ describe('trackedRepos thunks', () => {
 
     const asked = githubApi.fetchRepoSnapshot.mock.calls.map(([name]) => name);
     expect(asked.sort()).toEqual([never.fullName, stale.fullName].sort());
+  });
+
+  it('skips the opening refresh when GitHub has too little budget left', async () => {
+    const stale = { ...REPO_A, refreshedAt: null };
+    const alsoStale = { ...REPO_B, refreshedAt: null };
+    // Two repos cost four requests; three are left.
+    const { store, githubApi } = setup(
+      [stale, alsoStale],
+      coreBudget(3, new Date(Date.now() + 600_000).toISOString()),
+    );
+
+    await store.dispatch(refreshStaleRepos());
+
+    expect(githubApi.fetchRepoSnapshot).not.toHaveBeenCalled();
+  });
+
+  it('refreshes once the window has reset, however spent it looked', async () => {
+    const stale = { ...REPO_A, refreshedAt: null };
+    // Nothing left, but the window closed — those counts no longer apply.
+    const { store, githubApi } = setup(
+      [stale],
+      coreBudget(0, new Date(Date.now() - 60_000).toISOString()),
+    );
+    githubApi.fetchRepoSnapshot.mockResolvedValue(buildSnapshot(REPO_A));
+
+    await store.dispatch(refreshStaleRepos());
+
+    expect(githubApi.fetchRepoSnapshot).toHaveBeenCalledOnce();
   });
 });

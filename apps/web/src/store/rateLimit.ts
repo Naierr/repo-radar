@@ -35,4 +35,18 @@ export const selectCoreRateLimit = (state: IRateLimitRoot) =>
 export const selectSearchRateLimit = (state: IRateLimitRoot) =>
   state.rateLimit.search;
 
+/**
+ * Requests left on the core budget, or null when GitHub has not told us yet
+ * or the window has since reset — counts from a closed window describe a
+ * budget that has already refilled, so they must not gate anything.
+ */
+export const selectCoreRequestsLeft = (
+  state: IRateLimitRoot,
+  now: number,
+): number | null => {
+  const core = state.rateLimit.core;
+  if (!core) return null;
+  return Date.parse(core.resetAt) > now ? core.remaining : null;
+};
+
 export default rateLimitSlice;

@@ -11,7 +11,10 @@ import type { IRepoSnapshot, IRepoSummary, ITrackedRepo } from '@/types/repo';
 import { APP_ERROR_KIND, REQUEST_STATUS } from '@/types/request';
 import type { IRequestState } from '@/types/request';
 
+import { REQUESTS_PER_REPO_REFRESH } from '@/api/constants';
+
 import { createAppAsyncThunk } from './createAppAsyncThunk';
+import { selectCoreRequestsLeft } from './rateLimit';
 
 export const trackedReposAdapter = createEntityAdapter<ITrackedRepo>({
   // Most recently tracked first.
@@ -143,9 +146,18 @@ export const refreshStaleRepos = createAppAsyncThunk(
   'trackedRepos/refreshStaleRepos',
   async (_, { dispatch, getState }) => {
     const now = Date.now();
-    const staleIds = selectAllTrackedRepos(getState())
+    const state = getState();
+    const staleIds = selectAllTrackedRepos(state)
       .filter((repo) => isStale(repo, now))
       .map((repo) => repo.id);
+
+    // Merely opening the page must never spend the budget the user needs for
+    // the refresh they actually asked for. Stale figures stay on screen with
+    // their age beside them, which beats an empty budget and a row of errors.
+    const requestsLeft = selectCoreRequestsLeft(state, now);
+    const cost = staleIds.length * REQUESTS_PER_REPO_REFRESH;
+    if (requestsLeft !== null && cost > requestsLeft) return;
+
     await Promise.all(staleIds.map((id) => dispatch(refreshRepo(id))));
   },
 );
