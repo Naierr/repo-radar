@@ -23,6 +23,7 @@ import trackedReposSlice, {
   selectLastRefreshedAt,
   selectRefreshingCount,
   selectRepoRequest,
+  selectCommitRecency,
   selectStarsChartData,
   selectTrackedRepoById,
 } from './trackedRepos';
@@ -138,6 +139,33 @@ describe('trackedRepos selectors', () => {
     expect(selectStarsChartData(state)).toEqual([
       { id: '2', label: 'octo/big', value: 5000, delta: 0 },
       { id: '1', label: 'octo/small', value: 10, delta: 0 },
+    ]);
+  });
+
+  it('ranks the quietest repositories first, skipping ones with no commit', () => {
+    const now = Date.parse('2026-09-21T00:00:00Z');
+    const state = reduce([
+      buildTrackedRepo({
+        id: 1,
+        name: 'busy',
+        stats: { ...REPO_A.stats, lastCommitAt: '2026-09-20T00:00:00Z' },
+      }),
+      buildTrackedRepo({
+        id: 2,
+        name: 'quiet',
+        stats: { ...REPO_A.stats, lastCommitAt: '2026-09-01T00:00:00Z' },
+      }),
+      // Never refreshed, or a repository with no commits at all.
+      buildTrackedRepo({
+        id: 3,
+        name: 'unknown',
+        stats: { ...REPO_A.stats, lastCommitAt: null },
+      }),
+    ]);
+
+    expect(selectCommitRecency(state, now)).toEqual([
+      { id: '2', label: 'octo/quiet', value: 20 },
+      { id: '1', label: 'octo/busy', value: 1 },
     ]);
   });
 

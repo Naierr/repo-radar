@@ -23,6 +23,7 @@ import {
 } from '@/store/trackedRepos';
 import type { ITrackedRepo } from '@/types/repo';
 
+import CommitRecencyChart from './components/CommitRecencyChart';
 import RefreshAllButton from './components/RefreshAllButton';
 import RefreshBudgetNote from './components/RefreshBudgetNote';
 import SharedRadarPrompt from './components/SharedRadarPrompt';
@@ -124,6 +125,7 @@ const TrackedReposPage: React.FC = () => {
       ) : (
         <>
           <StarsChart />
+          <CommitRecencyChart />
           <Panel
             title="Repositories"
             disablePadding

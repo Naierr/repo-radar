@@ -100,6 +100,33 @@ export const selectTrackedRepoIdsBy = createSelector(
     ).map((repo) => repo.id),
 );
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+/**
+ * How long each repository has been quiet, longest silence first. Unlike a
+ * trend this needs no history — every refresh already carries the last commit
+ * date — so the chart is populated from the first visit.
+ */
+export const selectCommitRecency = createSelector(
+  [selectAllTrackedRepos, (_state: ITrackedReposRoot, now: number) => now],
+  (repos, now) =>
+    repos
+      .flatMap((repo) => {
+        const lastCommitAt = repo.stats.lastCommitAt;
+        if (lastCommitAt === null) return [];
+        const since = Date.parse(lastCommitAt);
+        if (Number.isNaN(since)) return [];
+        return [
+          {
+            id: String(repo.id),
+            label: repo.fullName,
+            value: Math.max(0, Math.floor((now - since) / MS_PER_DAY)),
+          },
+        ];
+      })
+      .sort((a, b) => b.value - a.value),
+);
+
 export const selectStarsChartData = createSelector(
   [selectAllTrackedRepos],
   (repos) =>
