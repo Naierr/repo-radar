@@ -45,10 +45,14 @@ export const recordHistory = (
   return [...next.slice(0, 1), ...next.slice(2)];
 };
 
-/** Null until there are two readings to compare. */
+/**
+ * Null only when nothing has been recorded yet. A trend needs an anchor and
+ * today's number, not two stored readings — requiring a second point left
+ * migrated repositories showing no movement when they plainly had some.
+ */
 export const readTrend = (repo: ITrackedRepo): IRepoTrend | null => {
   const anchor = repo.history[0];
-  if (!anchor || repo.history.length < 2) return null;
+  if (!anchor) return null;
 
   return {
     starsDelta: repo.stats.stars - anchor.stars,

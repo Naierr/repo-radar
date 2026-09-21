@@ -133,7 +133,7 @@ const TrackedRepoRow: React.FC<ITrackedRepoRowProps> = ({
         </RowStats>
       </div>
       <RowActions>
-        {trend && (
+        {trend && trend.points.length > 1 && (
           <Tooltip title="Reset trend">
             <IconButton
               aria-label={`Reset the trend for ${repo.fullName}`}

@@ -137,6 +137,29 @@ describe('tracked dashboard', () => {
     expect(githubApi.fetchRepoSnapshot).not.toHaveBeenCalled();
   });
 
+  it('shows how far the stars have moved since watching began', async () => {
+    const climber = buildTrackedRepo({
+      id: 9,
+      name: 'climber',
+      refreshedAt: new Date().toISOString(),
+      stats: { stars: 266_826, openIssues: 12, lastCommitAt: null },
+      history: [
+        { at: '2026-09-01T00:00:00.000Z', stars: 266_819, openIssues: 12 },
+      ],
+    });
+    renderDashboard([climber]);
+
+    // "266.8k" reads the same before and after, so the delta is the only
+    // thing that makes seven new stars visible.
+    const row = await screen.findByRole('button', {
+      name: `Refresh ${climber.fullName}`,
+    });
+    const container = row.closest('li');
+    expect(container).not.toBeNull();
+    expect(within(container!).getByText('266.8k')).toBeInTheDocument();
+    expect(within(container!).getByText('7')).toBeInTheDocument();
+  });
+
   it('sends an empty dashboard to search', async () => {
     const { user } = renderDashboard([]);
 

@@ -44,10 +44,26 @@ describe('recordHistory', () => {
 });
 
 describe('readTrend', () => {
-  it('has nothing to say until there are two readings', () => {
-    const repo = buildTrackedRepo({ history: [point('a', 10)] });
+  it('has nothing to say before anything has been recorded', () => {
+    expect(readTrend(buildTrackedRepo({ history: [] }))).toBeNull();
+  });
 
-    expect(readTrend(repo)).toBeNull();
+  it('measures from the anchor even with a single stored reading', () => {
+    const repo = buildTrackedRepo({
+      stats: { stars: 17, openIssues: 5, lastCommitAt: null },
+      history: [point('anchor', 10)],
+    });
+
+    expect(readTrend(repo)?.starsDelta).toBe(7);
+  });
+
+  it('reports no movement rather than null when nothing has moved', () => {
+    const repo = buildTrackedRepo({
+      stats: { stars: 10, openIssues: 5, lastCommitAt: null },
+      history: [point('anchor', 10)],
+    });
+
+    expect(readTrend(repo)?.starsDelta).toBe(0);
   });
 
   it('measures against the anchor, not the previous reading', () => {
